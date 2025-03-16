@@ -37,7 +37,7 @@ CREATE TABLE Categorias (
 );
 
 -- Tabla Tipos de Producto
-CREATE TABLE Tipos (
+CREATE TABLE TipoProducto (
     id_tipo INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_categoria INT NOT NULL,
     nombre VARCHAR2(100) UNIQUE NOT NULL,
@@ -297,7 +297,7 @@ CREATE OR REPLACE PROCEDURE InsertarTipoProducto(
     p_nombre IN VARCHAR2
 ) AS
 BEGIN
-    INSERT INTO Tipos (id_categoria, nombre)
+    INSERT INTO TipoProducto (id_categoria, nombre)
     VALUES (p_id_categoria, p_nombre);
     COMMIT;
 END InsertarTipoProducto;
@@ -309,7 +309,7 @@ CREATE OR REPLACE PROCEDURE ActualizarTipoProducto(
     p_nombre IN VARCHAR2
 ) AS
 BEGIN
-    UPDATE Tipos
+    UPDATE TipoProducto
     SET id_categoria = p_id_categoria,
         nombre = p_nombre
     WHERE id_tipo = p_id_tipo;
@@ -319,7 +319,7 @@ END ActualizarTipoProducto;
 
 CREATE OR REPLACE PROCEDURE EliminarTipoProducto(p_id_tipo IN INT) AS
 BEGIN
-    DELETE FROM Tipos WHERE id_tipo = p_id_tipo;
+    DELETE FROM TipoProducto WHERE id_tipo = p_id_tipo;
     COMMIT;
 END EliminarTipoProducto;
 /
@@ -501,7 +501,7 @@ BEGIN
     INSERT INTO Inventario (id_producto, tipo_movimiento, cantidad_kg, fecha_movimiento, id_detalle_pedido)
     VALUES (p_id_producto, p_tipo_movimiento, p_cantidad_kg, p_fecha_movimiento, p_id_detalle_pedido);
     COMMIT;
-END InsertarMovimientoInventario;
+END InsertarInventario;
 /
 
 CREATE OR REPLACE PROCEDURE ActualizarInventario(
@@ -521,14 +521,14 @@ BEGIN
         id_detalle_pedido = p_id_detalle_pedido
     WHERE id_movimiento = p_id_movimiento;
     COMMIT;
-END ActualizarMovimientoInventario;
+END ActualizarInventario;
 /
 
 CREATE OR REPLACE PROCEDURE EliminarInventario(p_id_movimiento IN INT) AS
 BEGIN
     DELETE FROM Inventario WHERE id_movimiento = p_id_movimiento;
     COMMIT;
-END EliminarMovimientoInventario;
+END EliminarInventario;
 /
 
 -- =============================
@@ -684,7 +684,7 @@ END ObtenerTotalPedidosCliente;
 CREATE OR REPLACE VIEW Vista_Productos AS
 SELECT p.id_producto, p.nombre, p.precio_kg, p.stock_kg, c.nombre AS categoria, pr.nombre AS proveedor
 FROM Productos p
-JOIN Tipos t ON p.id_tipo = t.id_tipo
+JOIN TipoProducto t ON p.id_tipo = t.id_tipo
 JOIN Categorias c ON t.id_categoria = c.id_categoria
 JOIN Proveedores pr ON p.id_proveedor = pr.id_proveedor;
 /
@@ -718,22 +718,3 @@ BEGIN
         :NEW.estado_pago := 'pendiente';
     END IF;
 END;
-
--- =============================
--- 18. CURSORES
--- =============================
-
-CREATE OR REPLACE PROCEDURE ListarProductosBajoStock AS
-    CURSOR cur_productos IS
-    SELECT id_producto, nombre, stock_kg FROM Productos WHERE stock_kg < 10;
-    v_producto Productos%ROWTYPE;
-BEGIN
-    OPEN cur_productos;
-    LOOP
-        FETCH cur_productos INTO v_producto;
-        EXIT WHEN cur_productos%NOTFOUND;
-        DBMS_OUTPUT.PUT_LINE('Producto: ' || v_producto.nombre || ' - Stock: ' || v_producto.stock_kg);
-    END LOOP;
-    CLOSE cur_productos;
-END ListarProductosBajoStock;
-/
