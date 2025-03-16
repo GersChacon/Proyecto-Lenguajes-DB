@@ -1,6 +1,7 @@
 -- =============================
 -- 1. CREACIÓN DE TABLAS
 -- =============================
+CREATE USER proyecto IDENTIFIED BY proyectoDB;
 
 -- Tabla Bancos
 CREATE TABLE Bancos (
