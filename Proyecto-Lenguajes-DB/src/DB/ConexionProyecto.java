@@ -1,6 +1,7 @@
 package DB;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 
 public class ConexionProyecto {
 
@@ -13,11 +14,11 @@ public class ConexionProyecto {
 
     private void conectar() {
         try {
-            Class.forName(""); //Driver BD
-            url = "";
+            Class.forName("oracle.jdbc.OracleDriver"); //Driver BD
+            url = "jdbc:oracle:thin:@localhost:1521:orcl";
             user = "proyecto";
-            pass = "clave";
-//            conn = DriverManager.getConnection(url, user, pass);
+            pass = "proyectoDB";
+            conn = DriverManager.getConnection(url, user, pass);
             System.out.println("Conectado!");
         } catch (Exception e) {
             System.out.println("Error, no se pudo conectar");
@@ -27,6 +28,7 @@ public class ConexionProyecto {
     public void desconectar() {
         try {
             conn.close();
+            System.out.println("Desconectado!");
         } catch (Exception e) {
             System.out.println("Error, no se pudo desconectar");
         }
