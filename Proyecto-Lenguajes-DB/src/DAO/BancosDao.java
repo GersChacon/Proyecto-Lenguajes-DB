@@ -1,5 +1,8 @@
 package DAO;
 
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import MODEL.Bancos;
 import DB.ConexionProyecto;
 import java.sql.CallableStatement;
@@ -55,5 +58,26 @@ public class BancosDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<Bancos> obtenerTodosLosBancos() {
+        List<Bancos> lista = new ArrayList<>();
+        String sql = "SELECT id_banco, nombre, direccion, telefono, email FROM VistaBancos";
+
+        try (Connection conn = ConexionProyecto.obtenerConexion(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Bancos banco = new Bancos();
+                banco.setIdBancos(rs.getInt("id_banco"));
+                banco.setNombre(rs.getString("nombre"));
+                banco.setDireccion(rs.getString("direccion"));
+                banco.setTelefono(rs.getString("telefono"));
+                banco.setEmail(rs.getString("email"));
+                lista.add(banco);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return lista;
     }
 }

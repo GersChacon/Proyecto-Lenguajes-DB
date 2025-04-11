@@ -1,6 +1,8 @@
 package SERVICE;
 
 import DAO.BancosDao;
+import java.util.List;
+import MODEL.Bancos;
 
 public class BancosService {
 
@@ -16,5 +18,9 @@ public class BancosService {
 
     public void eliminarBanco(int idBanco) {
         bancosDao.eliminarBanco(idBanco);
+    }
+
+    public List<Bancos> obtenerTodosLosBancos() {
+        return bancosDao.obtenerTodosLosBancos();
     }
 }

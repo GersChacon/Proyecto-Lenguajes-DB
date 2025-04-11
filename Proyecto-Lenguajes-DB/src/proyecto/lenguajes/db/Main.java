@@ -7,18 +7,21 @@ import CONTROLLER.EstadoPedidoController;
 import CONTROLLER.ProductosController;
 import CONTROLLER.ProveedoresController;
 import CONTROLLER.TiposProductoController;
+import VIEW.BancoForm;
 
 public class Main {
 
     public static void main(String[] args) {
-        BancosController controllerBanco = new BancosController();
-        ClientesController controllerCliente = new ClientesController();
-        ProveedoresController controllerProveedor = new ProveedoresController();
-        CategoriasController controllerCategorias = new CategoriasController();
-        TiposProductoController controllerTipoProducto = new TiposProductoController();
-        ProductosController controllerProducto = new ProductosController();
-        EstadoPedidoController controllerEstadoPedido = new EstadoPedidoController();
 
+        new BancoForm();
+
+//        BancosController controllerBanco = new BancosController();
+//        ClientesController controllerCliente = new ClientesController();
+//        ProveedoresController controllerProveedor = new ProveedoresController();
+//        CategoriasController controllerCategorias = new CategoriasController();
+//        TiposProductoController controllerTipoProducto = new TiposProductoController();
+//        ProductosController controllerProducto = new ProductosController();
+//        EstadoPedidoController controllerEstadoPedido = new EstadoPedidoController();
 //         Insertar un banco
 //        controllerBanco.insertarBanco("Banco de Costa Rica", "Avenida Central", "2222-3333", "contacto@bcr.com");
 //         Actualizar un banco
