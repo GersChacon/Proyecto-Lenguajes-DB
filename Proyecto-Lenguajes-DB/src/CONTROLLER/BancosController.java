@@ -23,4 +23,5 @@ public class BancosController {
     public List<Bancos> obtenerTodosLosBancos() {
         return service.obtenerTodosLosBancos();
     }
+
 }

@@ -718,3 +718,94 @@ BEGIN
         :NEW.estado_pago := 'pendiente';
     END IF;
 END;
+
+CREATE OR REPLACE PROCEDURE ObtenerTodosLosBancos (
+    p_resultado OUT SYS_REFCURSOR
+) AS
+BEGIN
+    OPEN p_resultado FOR
+        SELECT id_banco, nombre, direccion, telefono, email
+        FROM VistaBancos;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE ObtenerTodasLasCategorias (
+    p_resultado OUT SYS_REFCURSOR
+) AS
+BEGIN
+    OPEN p_resultado FOR
+        SELECT id_categoria, nombre
+        FROM categorias;
+END;
+/
+
+CREATE OR REPLACE VIEW VistaBancos AS
+SELECT 
+    id_banco, 
+    nombre, 
+    direccion, 
+    telefono, 
+    email
+FROM bancos;
+
+CREATE OR REPLACE VIEW VistaCategorias AS
+SELECT 
+    id_categoria, 
+    nombre
+FROM categorias;
+
+CREATE OR REPLACE VIEW VistaClientes AS
+SELECT 
+    id_cliente, 
+    nombre, 
+    direccion, 
+    telefono, 
+    email
+FROM Clientes;
+
+CREATE OR REPLACE PROCEDURE ObtenerTodosLosClientes(p_cursor OUT SYS_REFCURSOR) AS
+BEGIN
+    OPEN p_cursor FOR
+    SELECT 
+        id_cliente, 
+        nombre, 
+        direccion, 
+        telefono, 
+        email
+    FROM VistaClientes;
+END;
+
+CREATE OR REPLACE VIEW VW_ESTADOS_PEDIDO AS
+SELECT id_estado, nombre
+FROM ESTADOS_PEDIDO
+ORDER BY id_estado;
+
+CREATE OR REPLACE PROCEDURE ObtenerEstadosPedido(
+    p_cursor OUT SYS_REFCURSOR
+) AS
+BEGIN
+    OPEN p_cursor FOR
+    SELECT id_estado, nombre
+    FROM ESTADOS_PEDIDO
+    ORDER BY id_estado;
+END ObtenerEstadosPedido;
+
+CREATE OR REPLACE PROCEDURE ObtenerTodosProveedores(
+    p_cursor OUT SYS_REFCURSOR
+) AS
+BEGIN
+    OPEN p_cursor FOR
+    SELECT id_proveedor, nombre, telefono, email, direccion
+    FROM PROVEEDORES
+    ORDER BY id_proveedor;
+END ObtenerTodosProveedores;
+
+CREATE OR REPLACE PROCEDURE ObtenerTodosTiposProducto(
+    p_cursor OUT SYS_REFCURSOR
+) AS
+BEGIN
+    OPEN p_cursor FOR
+    SELECT id_tipo, id_categoria, nombre
+    FROM TIPOS_PRODUCTO
+    ORDER BY id_tipo;
+END ObtenerTodosTiposProducto;

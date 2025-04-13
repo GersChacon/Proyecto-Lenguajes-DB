@@ -1,6 +1,8 @@
 package CONTROLLER;
 
+import MODEL.Categorias;
 import SERVICE.CategoriasService;
+import java.util.List;
 
 public class CategoriasController {
 
@@ -17,4 +19,9 @@ public class CategoriasController {
     public void eliminarCategoria(int idCategoria) {
         service.eliminarCategoria(idCategoria);
     }
+
+    public List<Categorias> obtenerTodasLasCategorias() {
+        return service.obtenerTodasLasCategorias();
+    }
+
 }

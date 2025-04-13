@@ -1,9 +1,14 @@
 package DAO;
 
+import MODEL.Proveedores;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import DB.ConexionProyecto;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
+import oracle.jdbc.OracleTypes;
 
 public class ProveedoresDao {
 
@@ -54,5 +59,31 @@ public class ProveedoresDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<Proveedores> obtenerTodosLosProveedores() {
+        List<Proveedores> proveedores = new ArrayList<>();
+        String sql = "{call ObtenerTodosProveedores(?)}";
+
+        try (Connection conn = ConexionProyecto.obtenerConexion(); CallableStatement stmt = conn.prepareCall(sql)) {
+
+            stmt.registerOutParameter(1, OracleTypes.CURSOR);
+            stmt.execute();
+
+            try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+                while (rs.next()) {
+                    Proveedores proveedor = new Proveedores();
+                    proveedor.setIdProveedor(rs.getInt("id_proveedor"));
+                    proveedor.setNombre(rs.getString("nombre"));
+                    proveedor.setTelefono(rs.getString("telefono"));
+                    proveedor.setEmail(rs.getString("email"));
+                    proveedor.setDireccion(rs.getString("direccion"));
+                    proveedores.add(proveedor);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return proveedores;
     }
 }

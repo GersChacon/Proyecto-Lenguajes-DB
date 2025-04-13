@@ -1,6 +1,8 @@
 package SERVICE;
 
 import DAO.CategoriasDao;
+import MODEL.Categorias;
+import java.util.List;
 
 public class CategoriasService {
 
@@ -17,4 +19,9 @@ public class CategoriasService {
     public void eliminarCategoria(int idCategoria) {
         categoriasDao.eliminarCategoria(idCategoria);
     }
+
+    public List<Categorias> obtenerTodasLasCategorias() {
+        return categoriasDao.obtenerTodasLasCategorias(); // Y este en el DAO
+    }
+
 }

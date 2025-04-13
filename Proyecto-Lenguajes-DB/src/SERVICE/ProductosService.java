@@ -1,6 +1,8 @@
 package SERVICE;
 
 import DAO.ProductosDao;
+import MODEL.Productos;
+import java.util.List;
 
 public class ProductosService {
 
@@ -16,5 +18,9 @@ public class ProductosService {
 
     public void eliminarProducto(int idProducto) {
         productosDao.eliminarProducto(idProducto);
+    }
+
+    public List<Productos> obtenerTodosLosProductos() {
+        return productosDao.obtenerTodosLosProductos();
     }
 }

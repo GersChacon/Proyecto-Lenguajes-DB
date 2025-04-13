@@ -1,6 +1,8 @@
 package CONTROLLER;
 
+import MODEL.Proveedores;
 import SERVICE.ProveedoresService;
+import java.util.List;
 
 public class ProveedoresController {
 
@@ -16,5 +18,9 @@ public class ProveedoresController {
 
     public void eliminarProveedor(int idProveedor) {
         service.eliminarProveedor(idProveedor);
+    }
+
+    public List<Proveedores> obtenerTodosLosProveedores() {
+        return service.obtenerTodosLosProveedores();
     }
 }

@@ -1,6 +1,8 @@
 package SERVICE;
 
 import DAO.ClientesDao;
+import MODEL.Clientes;
+import java.util.List;
 
 public class ClientesService {
 
@@ -16,5 +18,9 @@ public class ClientesService {
 
     public void eliminarCliente(int idCliente) {
         clientesDao.eliminarCliente(idCliente);
+    }
+
+    public List<Clientes> obtenerTodosLosClientes() {
+        return clientesDao.obtenerTodosLosClientes();
     }
 }

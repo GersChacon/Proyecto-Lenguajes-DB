@@ -1,6 +1,8 @@
 package CONTROLLER;
 
+import MODEL.EstadoPedido;
 import SERVICE.EstadoPedidoService;
+import java.util.List;
 
 public class EstadoPedidoController {
 
@@ -17,4 +19,9 @@ public class EstadoPedidoController {
     public void eliminarEstadoPedido(int idEstado) {
         service.eliminarEstadoPedido(idEstado);
     }
+
+    public List<EstadoPedido> obtenerTodosLosEstadosPedido() {
+        return service.obtenerTodosLosEstadosPedido();
+    }
+
 }

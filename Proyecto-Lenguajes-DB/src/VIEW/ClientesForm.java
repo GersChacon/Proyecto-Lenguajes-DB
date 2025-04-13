@@ -1,25 +1,25 @@
 package VIEW;
 
-import CONTROLLER.BancosController;
-import MODEL.Bancos;
+import CONTROLLER.ClientesController;
+import MODEL.Clientes;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.*;
 import java.util.List;
 
-public class BancoForm extends JFrame {
+public class ClientesForm extends JFrame {
 
     private JTextField txtId, txtNombre, txtDireccion, txtTelefono, txtEmail;
     private JButton btnGuardar, btnActualizar, btnEliminar;
     private JTable tabla;
     private DefaultTableModel modeloTabla;
-    private BancosController controller;
+    private ClientesController controller;
 
-    public BancoForm() {
-        controller = new BancosController();
+    public ClientesForm() {
+        controller = new ClientesController();
 
-        setTitle("Gestión de Bancos");
+        setTitle("Gestión de Clientes");
         setSize(700, 450);
         setLayout(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -83,39 +83,40 @@ public class BancoForm extends JFrame {
         scroll.setBounds(20, 230, 640, 150);
         add(scroll);
 
-        cargarBancos();
+        cargarClientes();
 
+        // Eventos
         btnGuardar.addActionListener(e -> {
-            controller.insertarBanco(
+            controller.insertarCliente(
                     txtNombre.getText(),
                     txtDireccion.getText(),
                     txtTelefono.getText(),
                     txtEmail.getText()
             );
             limpiarCampos();
-            cargarBancos();
+            cargarClientes();
         });
 
         btnActualizar.addActionListener(e -> {
             if (!txtId.getText().isEmpty()) {
                 int id = Integer.parseInt(txtId.getText());
-                controller.actualizarBanco(id,
+                controller.actualizarCliente(id,
                         txtNombre.getText(),
                         txtDireccion.getText(),
                         txtTelefono.getText(),
                         txtEmail.getText()
                 );
                 limpiarCampos();
-                cargarBancos();
+                cargarClientes();
             }
         });
 
         btnEliminar.addActionListener(e -> {
             if (!txtId.getText().isEmpty()) {
                 int id = Integer.parseInt(txtId.getText());
-                controller.eliminarBanco(id);
+                controller.eliminarCliente(id);
                 limpiarCampos();
-                cargarBancos();
+                cargarClientes();
             }
         });
 
@@ -141,21 +142,21 @@ public class BancoForm extends JFrame {
         txtEmail.setText("");
     }
 
-    private void cargarBancos() {
+    private void cargarClientes() {
         modeloTabla.setRowCount(0);
-        List<Bancos> lista = controller.obtenerTodosLosBancos();
-        for (Bancos banco : lista) {
+        List<Clientes> lista = controller.obtenerTodosLosClientes();
+        for (Clientes c : lista) {
             modeloTabla.addRow(new Object[]{
-                banco.getIdBancos(),
-                banco.getNombre(),
-                banco.getDireccion(),
-                banco.getTelefono(),
-                banco.getEmail()
+                c.getIdCliente(),
+                c.getNombre(),
+                c.getDireccion(),
+                c.getTelefono(),
+                c.getEmail()
             });
         }
     }
 
     public static void main(String[] args) {
-        new BancoForm();
+        new ClientesForm();
     }
 }

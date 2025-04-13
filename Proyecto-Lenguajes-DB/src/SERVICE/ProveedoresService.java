@@ -1,6 +1,8 @@
 package SERVICE;
 
 import DAO.ProveedoresDao;
+import MODEL.Proveedores;
+import java.util.List;
 
 public class ProveedoresService {
 
@@ -16,5 +18,9 @@ public class ProveedoresService {
 
     public void eliminarProveedor(int idProveedor) {
         proveedoresDao.eliminarProveedor(idProveedor);
+    }
+
+    public List<Proveedores> obtenerTodosLosProveedores() {
+        return proveedoresDao.obtenerTodosLosProveedores();
     }
 }

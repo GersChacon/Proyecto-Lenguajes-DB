@@ -23,4 +23,5 @@ public class BancosService {
     public List<Bancos> obtenerTodosLosBancos() {
         return bancosDao.obtenerTodosLosBancos();
     }
+
 }

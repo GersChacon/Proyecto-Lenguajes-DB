@@ -1,6 +1,8 @@
 package SERVICE;
 
 import DAO.EstadoPedidoDao;
+import MODEL.EstadoPedido;
+import java.util.List;
 
 public class EstadoPedidoService {
 
@@ -17,4 +19,9 @@ public class EstadoPedidoService {
     public void eliminarEstadoPedido(int idEstado) {
         estadosPedidoDao.eliminarEstadoPedido(idEstado);
     }
+
+    public List<EstadoPedido> obtenerTodosLosEstadosPedido() {
+        return estadosPedidoDao.obtenerTodosLosEstadosPedido();
+    }
+
 }

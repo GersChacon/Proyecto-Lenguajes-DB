@@ -1,6 +1,10 @@
 package CONTROLLER;
 
+import MODEL.Clientes;
 import SERVICE.ClientesService;
+import java.util.List;
+
+import java.util.List;
 
 public class ClientesController {
 
@@ -16,5 +20,9 @@ public class ClientesController {
 
     public void eliminarCliente(int idCliente) {
         service.eliminarCliente(idCliente);
+    }
+
+    public List<Clientes> obtenerTodosLosClientes() {
+        return service.obtenerTodosLosClientes();
     }
 }

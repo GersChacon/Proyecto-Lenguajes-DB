@@ -1,9 +1,14 @@
 package DAO;
 
+import MODEL.TiposProducto;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import DB.ConexionProyecto;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
+import oracle.jdbc.OracleTypes;
 
 public class TiposProductoDao {
 
@@ -50,5 +55,29 @@ public class TiposProductoDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<TiposProducto> obtenerTodosLosTiposProducto() {
+        List<TiposProducto> tipos = new ArrayList<>();
+        String sql = "{call ObtenerTodosTiposProducto(?)}";
+
+        try (Connection conn = ConexionProyecto.obtenerConexion(); CallableStatement stmt = conn.prepareCall(sql)) {
+
+            stmt.registerOutParameter(1, OracleTypes.CURSOR);
+            stmt.execute();
+
+            try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+                while (rs.next()) {
+                    TiposProducto tipo = new TiposProducto();
+                    tipo.setIdTipo(rs.getInt("id_tipo"));
+                    tipo.setIdCategoria(rs.getInt("id_categoria"));
+                    tipo.setNombre(rs.getString("nombre"));
+                    tipos.add(tipo);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return tipos;
     }
 }

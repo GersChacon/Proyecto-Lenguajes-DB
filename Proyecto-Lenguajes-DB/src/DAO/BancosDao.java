@@ -8,6 +8,7 @@ import DB.ConexionProyecto;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
+import oracle.jdbc.OracleTypes;
 
 public class BancosDao {
 
@@ -62,10 +63,14 @@ public class BancosDao {
 
     public List<Bancos> obtenerTodosLosBancos() {
         List<Bancos> lista = new ArrayList<>();
-        String sql = "SELECT id_banco, nombre, direccion, telefono, email FROM VistaBancos";
+        String sql = "{call ObtenerTodosLosBancos(?)}";
 
-        try (Connection conn = ConexionProyecto.obtenerConexion(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = ConexionProyecto.obtenerConexion(); CallableStatement stmt = conn.prepareCall(sql)) {
 
+            stmt.registerOutParameter(1, OracleTypes.CURSOR);
+            stmt.execute();
+
+            ResultSet rs = (ResultSet) stmt.getObject(1);
             while (rs.next()) {
                 Bancos banco = new Bancos();
                 banco.setIdBancos(rs.getInt("id_banco"));
@@ -78,6 +83,8 @@ public class BancosDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return lista;
     }
+
 }

@@ -1,9 +1,14 @@
 package DAO;
 
+import MODEL.Productos;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import DB.ConexionProyecto;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
+import oracle.jdbc.OracleTypes;
 
 public class ProductosDao {
 
@@ -56,5 +61,32 @@ public class ProductosDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<Productos> obtenerTodosLosProductos() {
+        List<Productos> productos = new ArrayList<>();
+        String sql = "{call ObtenerTodosProductos(?)}";
+
+        try (Connection conn = ConexionProyecto.obtenerConexion(); CallableStatement stmt = conn.prepareCall(sql)) {
+
+            stmt.registerOutParameter(1, OracleTypes.CURSOR);
+            stmt.execute();
+
+            try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+                while (rs.next()) {
+                    Productos producto = new Productos();
+                    producto.setIdProducto(rs.getInt("id_producto"));
+                    producto.setIdTipo(rs.getInt("id_tipo"));
+                    producto.setIdProveedor(rs.getInt("id_proveedor"));
+                    producto.setNombre(rs.getString("nombre"));
+                    producto.setPrecioKg(rs.getDouble("precio_kg"));
+                    producto.setStockKg(rs.getDouble("stock_kg"));
+                    productos.add(producto);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return productos;
     }
 }

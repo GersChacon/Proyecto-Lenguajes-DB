@@ -1,6 +1,8 @@
 package CONTROLLER;
 
+import MODEL.TiposProducto;
 import SERVICE.TiposProductoService;
+import java.util.List;
 
 public class TiposProductoController {
 
@@ -16,5 +18,9 @@ public class TiposProductoController {
 
     public void eliminarTipoProducto(int idTipo) {
         service.eliminarTipoProducto(idTipo);
+    }
+
+    public List<TiposProducto> obtenerTodosLosTiposProducto() {
+        return service.obtenerTodosLosTiposProducto();
     }
 }
