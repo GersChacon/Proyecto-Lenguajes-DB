@@ -2,13 +2,12 @@ package VIEW;
 
 import CONTROLLER.PedidosController;
 import MODEL.Pedidos;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.*;
 import java.util.List;
 
-public class PedidosForm extends JFrame {
+public class PedidosView extends JFrame {
 
     private JTextField txtId, txtCliente, txtEstado, txtMonto;
     private JButton btnGuardar, btnActualizar, btnEliminar;
@@ -16,7 +15,7 @@ public class PedidosForm extends JFrame {
     private DefaultTableModel modeloTabla;
     private PedidosController controller;
 
-    public PedidosForm() {
+    public PedidosView() {
         controller = new PedidosController();
 
         setTitle("Gestión de Pedidos");
@@ -77,7 +76,6 @@ public class PedidosForm extends JFrame {
 
         cargarPedidos();
 
-        // Eventos
         btnGuardar.addActionListener(e -> {
             controller.insertarPedido(
                     Integer.parseInt(txtCliente.getText()),
@@ -145,6 +143,6 @@ public class PedidosForm extends JFrame {
     }
 
     public static void main(String[] args) {
-        new PedidosForm();
+        new PedidosView();
     }
 }

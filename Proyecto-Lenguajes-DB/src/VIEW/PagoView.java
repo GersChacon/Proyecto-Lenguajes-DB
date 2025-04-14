@@ -2,14 +2,13 @@ package VIEW;
 
 import CONTROLLER.PagoController;
 import MODEL.Pago;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.*;
 import java.util.List;
 import java.text.SimpleDateFormat;
 
-public class PagoForm extends JFrame {
+public class PagoView extends JFrame {
 
     private JTextField txtId, txtPedido, txtMonto;
     private JComboBox<String> cmbEstado;
@@ -19,7 +18,7 @@ public class PagoForm extends JFrame {
     private PagoController controller;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
-    public PagoForm() {
+    public PagoView() {
         controller = new PagoController();
 
         setTitle("Gestión de Pagos");
@@ -80,7 +79,6 @@ public class PagoForm extends JFrame {
 
         cargarPagos();
 
-        // Eventos
         btnGuardar.addActionListener(e -> {
             controller.insertarPago(
                     Integer.parseInt(txtPedido.getText()),
@@ -148,6 +146,6 @@ public class PagoForm extends JFrame {
     }
 
     public static void main(String[] args) {
-        new PagoForm();
+        new PagoView();
     }
 }

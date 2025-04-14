@@ -8,6 +8,7 @@ import DB.ConexionProyecto;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
+import oracle.jdbc.OracleTypes;
 
 public class MetodoPagoDao {
 
@@ -56,15 +57,20 @@ public class MetodoPagoDao {
 
     public List<MetodoPago> obtenerTodosLosMetodosPago() {
         List<MetodoPago> lista = new ArrayList<>();
-        String sql = "SELECT id_metodo_pago, nombre FROM VistaMetodosPago";
+        String sql = "{call ObtenerTodosMetodosPago(?)}";
 
-        try (Connection conn = ConexionProyecto.obtenerConexion(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = ConexionProyecto.obtenerConexion(); CallableStatement stmt = conn.prepareCall(sql)) {
 
-            while (rs.next()) {
-                MetodoPago metodo = new MetodoPago();
-                metodo.setIdMetodoPago(rs.getInt("id_metodo_pago"));
-                metodo.setNombre(rs.getString("nombre"));
-                lista.add(metodo);
+            stmt.registerOutParameter(1, OracleTypes.CURSOR);
+            stmt.execute();
+
+            try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+                while (rs.next()) {
+                    MetodoPago metodo = new MetodoPago();
+                    metodo.setIdMetodoPago(rs.getInt("id_metodo_pago"));
+                    metodo.setNombre(rs.getString("nombre"));
+                    lista.add(metodo);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();

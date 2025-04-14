@@ -9,6 +9,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
+import oracle.jdbc.OracleTypes;
 
 public class DetallePagoDao {
 
@@ -90,24 +91,27 @@ public class DetallePagoDao {
 
     public List<DetallePago> obtenerTodosLosDetallesPago() {
         List<DetallePago> lista = new ArrayList<>();
-        String sql = "SELECT id_detalle_pago, id_pago, id_metodo_pago, id_banco, "
-                + "numero_tarjeta, nombre_titular, fecha_expiracion, numero_transferencia "
-                + "FROM VistaDetallesPago";
+        String sql = "{call ObtenerTodosDetallesPago(?)}";
 
-        try (Connection conn = ConexionProyecto.obtenerConexion(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = ConexionProyecto.obtenerConexion(); CallableStatement stmt = conn.prepareCall(sql)) {
 
-            while (rs.next()) {
-                DetallePago detalle = new DetallePago();
-                detalle.setIdDetallePago(rs.getInt("id_detalle_pago"));
-                detalle.setIdPago(rs.getInt("id_pago"));
-                detalle.setIdMetodoPago(rs.getInt("id_metodo_pago"));
-                int banco = rs.getInt("id_banco");
-                detalle.setIdBanco(rs.wasNull() ? null : banco);
-                detalle.setNumeroTarjeta(rs.getString("numero_tarjeta"));
-                detalle.setNombreTitular(rs.getString("nombre_titular"));
-                detalle.setFechaExpiracion(rs.getDate("fecha_expiracion"));
-                detalle.setNumeroTransferencia(rs.getString("numero_transferencia"));
-                lista.add(detalle);
+            stmt.registerOutParameter(1, OracleTypes.CURSOR);
+            stmt.execute();
+
+            try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+                while (rs.next()) {
+                    DetallePago detalle = new DetallePago();
+                    detalle.setIdDetallePago(rs.getInt("id_detalle_pago"));
+                    detalle.setIdPago(rs.getInt("id_pago"));
+                    detalle.setIdMetodoPago(rs.getInt("id_metodo_pago"));
+                    int banco = rs.getInt("id_banco");
+                    detalle.setIdBanco(rs.wasNull() ? null : banco);
+                    detalle.setNumeroTarjeta(rs.getString("numero_tarjeta"));
+                    detalle.setNombreTitular(rs.getString("nombre_titular"));
+                    detalle.setFechaExpiracion(rs.getDate("fecha_expiracion"));
+                    detalle.setNumeroTransferencia(rs.getString("numero_transferencia"));
+                    lista.add(detalle);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();

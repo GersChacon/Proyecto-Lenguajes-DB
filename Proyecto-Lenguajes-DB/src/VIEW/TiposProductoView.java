@@ -8,7 +8,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
-public class TiposProductoForm extends JFrame {
+public class TiposProductoView extends JFrame {
 
     private JTextField txtId, txtIdCategoria, txtNombre;
     private JButton btnGuardar, btnActualizar, btnEliminar, btnLimpiar;
@@ -16,7 +16,7 @@ public class TiposProductoForm extends JFrame {
     private DefaultTableModel modeloTabla;
     private TiposProductoController controller;
 
-    public TiposProductoForm() {
+    public TiposProductoView() {
         controller = new TiposProductoController();
 
         setTitle("Gestión de Tipos de Producto");
@@ -24,7 +24,6 @@ public class TiposProductoForm extends JFrame {
         setLayout(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        // Campos del formulario
         JLabel lblId = new JLabel("ID Tipo:");
         lblId.setBounds(20, 20, 100, 25);
         add(lblId);
@@ -50,7 +49,6 @@ public class TiposProductoForm extends JFrame {
         txtNombre.setBounds(130, 100, 200, 25);
         add(txtNombre);
 
-        // Botones
         btnGuardar = new JButton("Guardar");
         btnGuardar.setBounds(350, 20, 120, 30);
         add(btnGuardar);
@@ -67,14 +65,13 @@ public class TiposProductoForm extends JFrame {
         btnLimpiar.setBounds(350, 140, 120, 30);
         add(btnLimpiar);
 
-        // Tabla de tipos de producto
         modeloTabla = new DefaultTableModel(new String[]{"ID", "ID Categoría", "Nombre"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-        
+
         tabla = new JTable(modeloTabla);
         JScrollPane scroll = new JScrollPane(tabla);
         scroll.setBounds(20, 180, 640, 250);
@@ -82,7 +79,6 @@ public class TiposProductoForm extends JFrame {
 
         cargarTiposProducto();
 
-        // Eventos
         btnGuardar.addActionListener(e -> guardarTipoProducto());
         btnActualizar.addActionListener(e -> actualizarTipoProducto());
         btnEliminar.addActionListener(e -> eliminarTipoProducto());
@@ -188,13 +184,13 @@ public class TiposProductoForm extends JFrame {
     private void cargarTiposProducto() {
         try {
             modeloTabla.setRowCount(0);
-            
+
             List<TiposProducto> listaTipos = controller.obtenerTodosLosTiposProducto();
-            
+
             if (listaTipos.isEmpty()) {
-                JOptionPane.showMessageDialog(this, 
-                    "No hay tipos de producto registrados", 
-                    "Información", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                        "No hay tipos de producto registrados",
+                        "Información", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 for (TiposProducto tipo : listaTipos) {
                     modeloTabla.addRow(new Object[]{
@@ -205,14 +201,14 @@ public class TiposProductoForm extends JFrame {
                 }
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al cargar tipos: " + e.getMessage(), 
-                "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Error al cargar tipos: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new TiposProductoForm());
+        SwingUtilities.invokeLater(() -> new TiposProductoView());
     }
 }

@@ -4,7 +4,6 @@ import CONTROLLER.DetallePagoController;
 import MODEL.DetallePago;
 import SERVICE.BancosService;
 import SERVICE.MetodoPagoService;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.*;
@@ -12,7 +11,7 @@ import java.util.List;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 
-public class DetallePagoForm extends JFrame {
+public class DetallePagoView extends JFrame {
 
     private JTextField txtId, txtPago, txtBanco, txtNumeroTarjeta, txtNombreTitular, txtNumeroTransferencia;
     private JComboBox<String> cmbMetodoPago;
@@ -23,7 +22,7 @@ public class DetallePagoForm extends JFrame {
     private DetallePagoController controller;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
-    public DetallePagoForm() {
+    public DetallePagoView() {
         controller = new DetallePagoController();
 
         setTitle("Gestión de Detalles de Pago");
@@ -31,7 +30,6 @@ public class DetallePagoForm extends JFrame {
         setLayout(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        // Cargar combos
         MetodoPagoService metodoPagoService = new MetodoPagoService();
         BancosService bancosService = new BancosService();
 
@@ -123,12 +121,11 @@ public class DetallePagoForm extends JFrame {
         cargarMetodosPago();
         cargarDetallesPago();
 
-        // Eventos
         btnGuardar.addActionListener(e -> {
             try {
                 controller.insertarDetallePago(
                         Integer.parseInt(txtPago.getText()),
-                        cmbMetodoPago.getSelectedIndex() + 1, // Asumiendo que los IDs empiezan en 1
+                        cmbMetodoPago.getSelectedIndex() + 1,
                         txtBanco.getText().isEmpty() ? null : Integer.parseInt(txtBanco.getText()),
                         txtNumeroTarjeta.getText(),
                         txtNombreTitular.getText(),
@@ -204,8 +201,6 @@ public class DetallePagoForm extends JFrame {
     }
 
     private void cargarMetodosPago() {
-        // Implementar carga de métodos de pago en el combo
-        // Esto es un ejemplo, deberías usar tu servicio de métodos de pago
         cmbMetodoPago.addItem("Efectivo");
         cmbMetodoPago.addItem("Tarjeta");
         cmbMetodoPago.addItem("Transferencia");
@@ -229,6 +224,6 @@ public class DetallePagoForm extends JFrame {
     }
 
     public static void main(String[] args) {
-        new DetallePagoForm();
+        new DetallePagoView();
     }
 }

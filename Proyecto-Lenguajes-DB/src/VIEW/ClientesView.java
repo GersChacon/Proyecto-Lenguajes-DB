@@ -2,13 +2,12 @@ package VIEW;
 
 import CONTROLLER.ClientesController;
 import MODEL.Clientes;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.*;
 import java.util.List;
 
-public class ClientesForm extends JFrame {
+public class ClientesView extends JFrame {
 
     private JTextField txtId, txtNombre, txtDireccion, txtTelefono, txtEmail;
     private JButton btnGuardar, btnActualizar, btnEliminar;
@@ -16,7 +15,7 @@ public class ClientesForm extends JFrame {
     private DefaultTableModel modeloTabla;
     private ClientesController controller;
 
-    public ClientesForm() {
+    public ClientesView() {
         controller = new ClientesController();
 
         setTitle("Gestión de Clientes");
@@ -85,7 +84,6 @@ public class ClientesForm extends JFrame {
 
         cargarClientes();
 
-        // Eventos
         btnGuardar.addActionListener(e -> {
             controller.insertarCliente(
                     txtNombre.getText(),
@@ -157,6 +155,6 @@ public class ClientesForm extends JFrame {
     }
 
     public static void main(String[] args) {
-        new ClientesForm();
+        new ClientesView();
     }
 }

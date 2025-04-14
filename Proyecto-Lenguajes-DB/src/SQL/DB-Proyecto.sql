@@ -719,15 +719,13 @@ BEGIN
     END IF;
 END;
 
-CREATE OR REPLACE PROCEDURE ObtenerTodosLosBancos (
-    p_resultado OUT SYS_REFCURSOR
-) AS
+CREATE OR REPLACE PROCEDURE ObtenerTodosLosBancos(
+    p_cursor OUT SYS_REFCURSOR
+)AS
 BEGIN
-    OPEN p_resultado FOR
-        SELECT id_banco, nombre, direccion, telefono, email
-        FROM VistaBancos;
-END;
-/
+    OPEN p_cursor FOR
+    SELECT * FROM BANCOS;
+END ObtenerTodosLosBancos;
 
 CREATE OR REPLACE PROCEDURE ObtenerTodasLasCategorias (
     p_resultado OUT SYS_REFCURSOR
@@ -737,33 +735,10 @@ BEGIN
         SELECT id_categoria, nombre
         FROM categorias;
 END;
-/
 
-CREATE OR REPLACE VIEW VistaBancos AS
-SELECT 
-    id_banco, 
-    nombre, 
-    direccion, 
-    telefono, 
-    email
-FROM bancos;
-
-CREATE OR REPLACE VIEW VistaCategorias AS
-SELECT 
-    id_categoria, 
-    nombre
-FROM categorias;
-
-CREATE OR REPLACE VIEW VistaClientes AS
-SELECT 
-    id_cliente, 
-    nombre, 
-    direccion, 
-    telefono, 
-    email
-FROM Clientes;
-
-CREATE OR REPLACE PROCEDURE ObtenerTodosLosClientes(p_cursor OUT SYS_REFCURSOR) AS
+CREATE OR REPLACE PROCEDURE ObtenerTodosLosClientes(
+    p_cursor OUT SYS_REFCURSOR
+) AS
 BEGIN
     OPEN p_cursor FOR
     SELECT 
@@ -772,13 +747,8 @@ BEGIN
         direccion, 
         telefono, 
         email
-    FROM VistaClientes;
+    FROM Clientes;
 END;
-
-CREATE OR REPLACE VIEW VW_ESTADOS_PEDIDO AS
-SELECT id_estado, nombre
-FROM ESTADOS_PEDIDO
-ORDER BY id_estado;
 
 CREATE OR REPLACE PROCEDURE ObtenerEstadosPedido(
     p_cursor OUT SYS_REFCURSOR
@@ -789,6 +759,15 @@ BEGIN
     FROM ESTADOS_PEDIDO
     ORDER BY id_estado;
 END ObtenerEstadosPedido;
+
+CREATE OR REPLACE PROCEDURE ObtenerTodosProductos(
+p_cursor OUT SYS_REFCURSOR
+)AS
+BEGIN
+    OPEN p_cursor FOR
+    SELECT id_producto, id_tipo, id_proveedor, nombre, precio_kg, stock_kg
+    FROM productos;
+END ObtenerTodosProductos;
 
 CREATE OR REPLACE PROCEDURE ObtenerTodosProveedores(
     p_cursor OUT SYS_REFCURSOR
@@ -806,6 +785,56 @@ CREATE OR REPLACE PROCEDURE ObtenerTodosTiposProducto(
 BEGIN
     OPEN p_cursor FOR
     SELECT id_tipo, id_categoria, nombre
-    FROM TIPOS_PRODUCTO
+    FROM TIPOPRODUCTO
     ORDER BY id_tipo;
 END ObtenerTodosTiposProducto;
+
+CREATE OR REPLACE PROCEDURE ObtenerTodosDetallesPago(p_cursor OUT SYS_REFCURSOR)
+AS
+BEGIN
+    OPEN p_cursor FOR
+    SELECT id_detalle_pago, id_pago, id_metodo_pago, id_banco, 
+           numero_tarjeta, nombre_titular, fecha_expiracion, numero_transferencia 
+    FROM Detalles_Pago;
+END ObtenerTodosDetallesPago;
+
+CREATE OR REPLACE PROCEDURE ObtenerTodosDetallesPedido(p_cursor OUT SYS_REFCURSOR)
+AS
+BEGIN
+    OPEN p_cursor FOR
+    SELECT id_detalle, id_pedido, id_producto, cantidad_kg, precio_unitario, subtotal 
+    FROM Detalle_Pedido;
+END ObtenerTodosDetallesPedido;
+
+CREATE OR REPLACE PROCEDURE ObtenerTodosMovimientosInventario(p_cursor OUT SYS_REFCURSOR)
+AS
+BEGIN
+    OPEN p_cursor FOR
+    SELECT id_movimiento, id_producto, tipo_movimiento, cantidad_kg, 
+           fecha_movimiento, id_detalle_pedido 
+    FROM Inventario;
+END ObtenerTodosMovimientosInventario;
+
+CREATE OR REPLACE PROCEDURE ObtenerTodosMetodosPago(p_cursor OUT SYS_REFCURSOR)
+AS
+BEGIN
+    OPEN p_cursor FOR
+    SELECT id_metodo_pago, nombre 
+    FROM Metodos_Pago;
+END ObtenerTodosMetodosPago;
+
+CREATE OR REPLACE PROCEDURE ObtenerTodosPagos(p_cursor OUT SYS_REFCURSOR)
+AS
+BEGIN
+    OPEN p_cursor FOR
+    SELECT id_pago, id_pedido, monto, fecha_pago, estado_pago 
+    FROM Pagos;
+END ObtenerTodosPagos;
+
+CREATE OR REPLACE PROCEDURE ObtenerTodosPedidos(p_cursor OUT SYS_REFCURSOR)
+AS
+BEGIN
+    OPEN p_cursor FOR
+    SELECT id_pedido, id_cliente, id_estado, fecha_pedido, monto_pagado 
+    FROM Pedidos;
+END ObtenerTodosPedidos;

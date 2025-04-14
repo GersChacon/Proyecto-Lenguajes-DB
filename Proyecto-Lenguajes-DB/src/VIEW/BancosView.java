@@ -2,13 +2,12 @@ package VIEW;
 
 import CONTROLLER.BancosController;
 import MODEL.Bancos;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.*;
 import java.util.List;
 
-public class BancoForm extends JFrame {
+public class BancosView extends JFrame {
 
     private JTextField txtId, txtNombre, txtDireccion, txtTelefono, txtEmail;
     private JButton btnGuardar, btnActualizar, btnEliminar;
@@ -16,7 +15,7 @@ public class BancoForm extends JFrame {
     private DefaultTableModel modeloTabla;
     private BancosController controller;
 
-    public BancoForm() {
+    public BancosView() {
         controller = new BancosController();
 
         setTitle("Gestión de Bancos");
@@ -156,6 +155,6 @@ public class BancoForm extends JFrame {
     }
 
     public static void main(String[] args) {
-        new BancoForm();
+        new BancosView();
     }
 }

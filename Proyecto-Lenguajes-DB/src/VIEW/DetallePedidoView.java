@@ -8,7 +8,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.*;
 import java.util.List;
 
-public class DetallePedidoForm extends JFrame {
+public class DetallePedidoView extends JFrame {
 
     private JTextField txtId, txtPedido, txtProducto, txtCantidad, txtPrecio;
     private JButton btnGuardar, btnActualizar, btnEliminar;
@@ -16,7 +16,7 @@ public class DetallePedidoForm extends JFrame {
     private DefaultTableModel modeloTabla;
     private DetallePedidoController controller;
 
-    public DetallePedidoForm() {
+    public DetallePedidoView() {
         controller = new DetallePedidoController();
 
         setTitle("Gestión de Detalle de Pedido");
@@ -158,6 +158,6 @@ public class DetallePedidoForm extends JFrame {
     }
 
     public static void main(String[] args) {
-        new DetallePedidoForm();
+        new DetallePedidoView();
     }
 }

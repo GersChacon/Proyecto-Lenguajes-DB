@@ -4,8 +4,6 @@ import MODEL.Clientes;
 import SERVICE.ClientesService;
 import java.util.List;
 
-import java.util.List;
-
 public class ClientesController {
 
     private ClientesService service = new ClientesService();

@@ -8,6 +8,7 @@ import DB.ConexionProyecto;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
+import oracle.jdbc.OracleTypes;
 
 public class DetallePedidoDao {
 
@@ -63,19 +64,24 @@ public class DetallePedidoDao {
 
     public List<DetallePedido> obtenerTodosLosDetalles() {
         List<DetallePedido> lista = new ArrayList<>();
-        String sql = "SELECT id_detalle, id_pedido, id_producto, cantidad_kg, precio_unitario, subtotal FROM VistaDetallePedido";
+        String sql = "{call ObtenerTodosDetallesPedido(?)}";
 
-        try (Connection conn = ConexionProyecto.obtenerConexion(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = ConexionProyecto.obtenerConexion(); CallableStatement stmt = conn.prepareCall(sql)) {
 
-            while (rs.next()) {
-                DetallePedido detalle = new DetallePedido();
-                detalle.setIdDetalle(rs.getInt("id_detalle"));
-                detalle.setIdPedido(rs.getInt("id_pedido"));
-                detalle.setIdProducto(rs.getInt("id_producto"));
-                detalle.setCantidadKg(rs.getDouble("cantidad_kg"));
-                detalle.setPrecioUnitario(rs.getDouble("precio_unitario"));
-                detalle.setSubtotal(rs.getDouble("subtotal"));
-                lista.add(detalle);
+            stmt.registerOutParameter(1, OracleTypes.CURSOR);
+            stmt.execute();
+
+            try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+                while (rs.next()) {
+                    DetallePedido detalle = new DetallePedido();
+                    detalle.setIdDetalle(rs.getInt("id_detalle"));
+                    detalle.setIdPedido(rs.getInt("id_pedido"));
+                    detalle.setIdProducto(rs.getInt("id_producto"));
+                    detalle.setCantidadKg(rs.getDouble("cantidad_kg"));
+                    detalle.setPrecioUnitario(rs.getDouble("precio_unitario"));
+                    detalle.setSubtotal(rs.getDouble("subtotal"));
+                    lista.add(detalle);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();

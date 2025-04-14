@@ -21,7 +21,7 @@ public class CategoriasService {
     }
 
     public List<Categorias> obtenerTodasLasCategorias() {
-        return categoriasDao.obtenerTodasLasCategorias(); // Y este en el DAO
+        return categoriasDao.obtenerTodasLasCategorias();
     }
 
 }

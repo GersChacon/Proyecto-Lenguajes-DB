@@ -2,14 +2,13 @@ package VIEW;
 
 import CONTROLLER.InventarioController;
 import MODEL.Inventario;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.*;
 import java.util.List;
 import java.text.SimpleDateFormat;
 
-public class InventarioForm extends JFrame {
+public class InventarioView extends JFrame {
 
     private JTextField txtId, txtProducto, txtCantidad, txtDetallePedido;
     private JComboBox<String> cmbTipoMovimiento;
@@ -19,7 +18,7 @@ public class InventarioForm extends JFrame {
     private InventarioController controller;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
-    public InventarioForm() {
+    public InventarioView() {
         controller = new InventarioController();
 
         setTitle("Gestión de Inventario");
@@ -88,7 +87,6 @@ public class InventarioForm extends JFrame {
 
         cargarMovimientos();
 
-        // Eventos
         btnGuardar.addActionListener(e -> {
             Integer detallePedido = txtDetallePedido.getText().isEmpty() ? null : Integer.parseInt(txtDetallePedido.getText());
             controller.insertarMovimiento(
@@ -164,6 +162,6 @@ public class InventarioForm extends JFrame {
     }
 
     public static void main(String[] args) {
-        new InventarioForm();
+        new InventarioView();
     }
 }

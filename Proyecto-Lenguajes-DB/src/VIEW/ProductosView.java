@@ -7,7 +7,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.*;
 import java.util.List;
 
-public class ProductosForm extends JFrame {
+public class ProductosView extends JFrame {
 
     private JTextField txtId, txtNombre, txtPrecioKg, txtStockKg, txtIdTipo, txtIdProveedor;
     private JButton btnGuardar, btnActualizar, btnEliminar, btnLimpiar;
@@ -15,7 +15,7 @@ public class ProductosForm extends JFrame {
     private DefaultTableModel modeloTabla;
     private ProductosController controller;
 
-    public ProductosForm() {
+    public ProductosView() {
         controller = new ProductosController();
 
         setTitle("Gestión de Productos");
@@ -23,7 +23,6 @@ public class ProductosForm extends JFrame {
         setLayout(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        // Campos del formulario
         JLabel lblId = new JLabel("ID Producto:");
         lblId.setBounds(20, 20, 100, 25);
         add(lblId);
@@ -73,7 +72,6 @@ public class ProductosForm extends JFrame {
         txtStockKg.setBounds(130, 220, 150, 25);
         add(txtStockKg);
 
-        // Botones
         btnGuardar = new JButton("Guardar");
         btnGuardar.setBounds(300, 60, 120, 30);
         add(btnGuardar);
@@ -90,7 +88,6 @@ public class ProductosForm extends JFrame {
         btnLimpiar.setBounds(300, 180, 120, 30);
         add(btnLimpiar);
 
-        // Tabla de productos
         modeloTabla = new DefaultTableModel(new String[]{"ID", "ID Tipo", "ID Proveedor", "Nombre", "Precio/Kg", "Stock/Kg"}, 0);
         tabla = new JTable(modeloTabla);
         JScrollPane scroll = new JScrollPane(tabla);
@@ -99,7 +96,6 @@ public class ProductosForm extends JFrame {
 
         cargarProductos();
 
-        // Eventos
         btnGuardar.addActionListener(e -> guardarProducto());
         btnActualizar.addActionListener(e -> actualizarProducto());
         btnEliminar.addActionListener(e -> eliminarProducto());
@@ -238,6 +234,6 @@ public class ProductosForm extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new ProductosForm());
+        SwingUtilities.invokeLater(() -> new ProductosView());
     }
 }

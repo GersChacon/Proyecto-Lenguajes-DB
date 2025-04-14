@@ -8,7 +8,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
-public class ProveedoresForm extends JFrame {
+public class ProveedoresView extends JFrame {
 
     private JTextField txtId, txtNombre, txtTelefono, txtEmail, txtDireccion;
     private JButton btnGuardar, btnActualizar, btnEliminar, btnLimpiar;
@@ -16,7 +16,7 @@ public class ProveedoresForm extends JFrame {
     private DefaultTableModel modeloTabla;
     private ProveedoresController controller;
 
-    public ProveedoresForm() {
+    public ProveedoresView() {
         controller = new ProveedoresController();
 
         setTitle("Gestión de Proveedores");
@@ -24,7 +24,6 @@ public class ProveedoresForm extends JFrame {
         setLayout(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        // Campos del formulario
         JLabel lblId = new JLabel("ID Proveedor:");
         lblId.setBounds(20, 20, 100, 25);
         add(lblId);
@@ -66,7 +65,6 @@ public class ProveedoresForm extends JFrame {
         txtDireccion.setBounds(130, 180, 200, 25);
         add(txtDireccion);
 
-        // Botones
         btnGuardar = new JButton("Guardar");
         btnGuardar.setBounds(350, 60, 120, 30);
         add(btnGuardar);
@@ -83,11 +81,10 @@ public class ProveedoresForm extends JFrame {
         btnLimpiar.setBounds(350, 180, 120, 30);
         add(btnLimpiar);
 
-        // Tabla de proveedores
         modeloTabla = new DefaultTableModel(new String[]{"ID", "Nombre", "Teléfono", "Email", "Dirección"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Hacer que la tabla no sea editable
+                return false;
             }
         };
 
@@ -98,7 +95,6 @@ public class ProveedoresForm extends JFrame {
 
         cargarProveedores();
 
-        // Eventos
         btnGuardar.addActionListener(e -> guardarProveedor());
         btnActualizar.addActionListener(e -> actualizarProveedor());
         btnEliminar.addActionListener(e -> eliminarProveedor());
@@ -235,6 +231,6 @@ public class ProveedoresForm extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new ProveedoresForm());
+        SwingUtilities.invokeLater(() -> new ProveedoresView());
     }
 }

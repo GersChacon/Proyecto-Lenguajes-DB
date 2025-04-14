@@ -2,13 +2,12 @@ package VIEW;
 
 import CONTROLLER.EstadoPedidoController;
 import MODEL.EstadoPedido;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.*;
 import java.util.List;
 
-public class EstadoPedidoForm extends JFrame {
+public class EstadoPedidoView extends JFrame {
 
     private JTextField txtId, txtNombre;
     private JButton btnGuardar, btnActualizar, btnEliminar;
@@ -16,7 +15,7 @@ public class EstadoPedidoForm extends JFrame {
     private DefaultTableModel modeloTabla;
     private EstadoPedidoController controller;
 
-    public EstadoPedidoForm() {
+    public EstadoPedidoView() {
         controller = new EstadoPedidoController();
 
         setTitle("Gestión de Estados de Pedido");
@@ -61,7 +60,6 @@ public class EstadoPedidoForm extends JFrame {
 
         cargarEstadosPedido();
 
-        // Eventos
         btnGuardar.addActionListener(e -> {
             if (!txtNombre.getText().isEmpty()) {
                 controller.insertarEstadoPedido(txtNombre.getText());
@@ -139,6 +137,6 @@ public class EstadoPedidoForm extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new EstadoPedidoForm());
+        SwingUtilities.invokeLater(() -> new EstadoPedidoView());
     }
 }

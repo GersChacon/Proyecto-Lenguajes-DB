@@ -9,6 +9,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
+import oracle.jdbc.OracleTypes;
 
 public class PagoDao {
 
@@ -61,18 +62,23 @@ public class PagoDao {
 
     public List<Pago> obtenerTodosLosPagos() {
         List<Pago> lista = new ArrayList<>();
-        String sql = "SELECT id_pago, id_pedido, monto, fecha_pago, estado_pago FROM VistaPagos";
+        String sql = "{call ObtenerTodosPagos(?)}";
 
-        try (Connection conn = ConexionProyecto.obtenerConexion(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = ConexionProyecto.obtenerConexion(); CallableStatement stmt = conn.prepareCall(sql)) {
 
-            while (rs.next()) {
-                Pago pago = new Pago();
-                pago.setIdPago(rs.getInt("id_pago"));
-                pago.setIdPedido(rs.getInt("id_pedido"));
-                pago.setMonto(rs.getDouble("monto"));
-                pago.setFechaPago(rs.getDate("fecha_pago"));
-                pago.setEstadoPago(rs.getString("estado_pago"));
-                lista.add(pago);
+            stmt.registerOutParameter(1, OracleTypes.CURSOR);
+            stmt.execute();
+
+            try (ResultSet rs = (ResultSet) stmt.getObject(1)) {
+                while (rs.next()) {
+                    Pago pago = new Pago();
+                    pago.setIdPago(rs.getInt("id_pago"));
+                    pago.setIdPedido(rs.getInt("id_pedido"));
+                    pago.setMonto(rs.getDouble("monto"));
+                    pago.setFechaPago(rs.getDate("fecha_pago"));
+                    pago.setEstadoPago(rs.getString("estado_pago"));
+                    lista.add(pago);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();

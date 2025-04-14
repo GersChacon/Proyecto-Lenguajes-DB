@@ -1,26 +1,25 @@
 package VIEW;
 
-import CONTROLLER.MetodoPagoController;
-import MODEL.MetodoPago;
-
+import CONTROLLER.CategoriasController;
+import MODEL.Categorias;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.*;
 import java.util.List;
 
-public class MetodoPagoForm extends JFrame {
+public class CategoriasView extends JFrame {
 
     private JTextField txtId, txtNombre;
     private JButton btnGuardar, btnActualizar, btnEliminar;
     private JTable tabla;
     private DefaultTableModel modeloTabla;
-    private MetodoPagoController controller;
+    private CategoriasController controller;
 
-    public MetodoPagoForm() {
-        controller = new MetodoPagoController();
+    public CategoriasView() {
+        controller = new CategoriasController();
 
-        setTitle("Gestión de Métodos de Pago");
-        setSize(600, 400);
+        setTitle("Gestión de Categorías");
+        setSize(500, 400);
         setLayout(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -42,47 +41,46 @@ public class MetodoPagoForm extends JFrame {
         add(txtNombre);
 
         btnGuardar = new JButton("Guardar");
-        btnGuardar.setBounds(350, 20, 100, 30);
+        btnGuardar.setBounds(350, 60, 100, 30);
         add(btnGuardar);
 
         btnActualizar = new JButton("Actualizar");
-        btnActualizar.setBounds(350, 60, 100, 30);
+        btnActualizar.setBounds(350, 100, 100, 30);
         add(btnActualizar);
 
         btnEliminar = new JButton("Eliminar");
-        btnEliminar.setBounds(350, 100, 100, 30);
+        btnEliminar.setBounds(350, 140, 100, 30);
         add(btnEliminar);
 
         modeloTabla = new DefaultTableModel(new String[]{"ID", "Nombre"}, 0);
         tabla = new JTable(modeloTabla);
         JScrollPane scroll = new JScrollPane(tabla);
-        scroll.setBounds(20, 150, 550, 200);
+        scroll.setBounds(20, 200, 430, 140);
         add(scroll);
 
-        cargarMetodosPago();
+        cargarCategorias();
 
-        // Eventos
         btnGuardar.addActionListener(e -> {
-            controller.insertarMetodoPago(txtNombre.getText());
+            controller.insertarCategoria(txtNombre.getText());
             limpiarCampos();
-            cargarMetodosPago();
+            cargarCategorias();
         });
 
         btnActualizar.addActionListener(e -> {
             if (!txtId.getText().isEmpty()) {
                 int id = Integer.parseInt(txtId.getText());
-                controller.actualizarMetodoPago(id, txtNombre.getText());
+                controller.actualizarCategoria(id, txtNombre.getText());
                 limpiarCampos();
-                cargarMetodosPago();
+                cargarCategorias();
             }
         });
 
         btnEliminar.addActionListener(e -> {
             if (!txtId.getText().isEmpty()) {
                 int id = Integer.parseInt(txtId.getText());
-                controller.eliminarMetodoPago(id);
+                controller.eliminarCategoria(id);
                 limpiarCampos();
-                cargarMetodosPago();
+                cargarCategorias();
             }
         });
 
@@ -102,18 +100,18 @@ public class MetodoPagoForm extends JFrame {
         txtNombre.setText("");
     }
 
-    private void cargarMetodosPago() {
+    private void cargarCategorias() {
         modeloTabla.setRowCount(0);
-        List<MetodoPago> lista = controller.obtenerTodosLosMetodosPago();
-        for (MetodoPago metodo : lista) {
+        List<Categorias> lista = controller.obtenerTodasLasCategorias();
+        for (Categorias categoria : lista) {
             modeloTabla.addRow(new Object[]{
-                metodo.getIdMetodoPago(),
-                metodo.getNombre()
+                categoria.getIdCategoria(),
+                categoria.getNombre()
             });
         }
     }
 
     public static void main(String[] args) {
-        new MetodoPagoForm();
+        new CategoriasView();
     }
 }

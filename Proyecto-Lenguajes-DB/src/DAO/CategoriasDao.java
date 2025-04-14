@@ -57,7 +57,7 @@ public class CategoriasDao {
 
     public List<Categorias> obtenerTodasLasCategorias() {
         List<Categorias> lista = new ArrayList<>();
-        String sql = "{call ObtenerTodasLasCategorias(?)}"; // Asegúrate de tener este SP
+        String sql = "{call ObtenerTodasLasCategorias(?)}";
 
         try (Connection conn = ConexionProyecto.obtenerConexion(); CallableStatement stmt = conn.prepareCall(sql)) {
 
@@ -67,7 +67,7 @@ public class CategoriasDao {
             ResultSet rs = (ResultSet) stmt.getObject(1);
             while (rs.next()) {
                 Categorias cat = new Categorias();
-                cat.setIdCategoria(rs.getInt("id_categoria")); // Asegúrate del nombre exacto de la columna
+                cat.setIdCategoria(rs.getInt("id_categoria"));
                 cat.setNombre(rs.getString("nombre"));
                 lista.add(cat);
             }
