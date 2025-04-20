@@ -2,6 +2,7 @@ package VIEW;
 
 import CONTROLLER.TiposProductoController;
 import MODEL.TiposProducto;
+import com.formdev.flatlaf.FlatDarkLaf;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -18,79 +19,74 @@ public class TiposProductoView extends JFrame {
 
     public TiposProductoView() {
         controller = new TiposProductoController();
+        initComponents();
+        setupListeners();
+        cargarTiposProducto();
+    }
 
+    private void initComponents() {
         setTitle("Gestión de Tipos de Producto");
         setSize(700, 500);
-        setLayout(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
 
-        JLabel lblId = new JLabel("ID Tipo:");
-        lblId.setBounds(20, 20, 100, 25);
-        add(lblId);
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        txtId = new JTextField();
-        txtId.setBounds(130, 20, 150, 25);
-        txtId.setEnabled(false);
-        add(txtId);
+        // Panel formulario
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBorder(BorderFactory.createTitledBorder("Datos del Tipo de Producto"));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.anchor = GridBagConstraints.WEST;
 
-        JLabel lblIdCategoria = new JLabel("ID Categoría:");
-        lblIdCategoria.setBounds(20, 60, 100, 25);
-        add(lblIdCategoria);
+        addFormField(formPanel, gbc, "ID:", txtId = createTextField(false), 0);
+        addFormField(formPanel, gbc, "ID Categoría:", txtIdCategoria = createTextField(true), 1);
+        addFormField(formPanel, gbc, "Nombre:", txtNombre = createTextField(true), 2);
 
-        txtIdCategoria = new JTextField();
-        txtIdCategoria.setBounds(130, 60, 150, 25);
-        add(txtIdCategoria);
-
-        JLabel lblNombre = new JLabel("Nombre:");
-        lblNombre.setBounds(20, 100, 100, 25);
-        add(lblNombre);
-
-        txtNombre = new JTextField();
-        txtNombre.setBounds(130, 100, 200, 25);
-        add(txtNombre);
-
+        // Botones
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         btnGuardar = new JButton("Guardar");
-        btnGuardar.setBounds(350, 20, 120, 30);
-        add(btnGuardar);
-
         btnActualizar = new JButton("Actualizar");
-        btnActualizar.setBounds(350, 60, 120, 30);
-        add(btnActualizar);
-
         btnEliminar = new JButton("Eliminar");
-        btnEliminar.setBounds(350, 100, 120, 30);
-        add(btnEliminar);
-
         btnLimpiar = new JButton("Limpiar");
-        btnLimpiar.setBounds(350, 140, 120, 30);
-        add(btnLimpiar);
+        buttonPanel.add(btnGuardar);
+        buttonPanel.add(btnActualizar);
+        buttonPanel.add(btnEliminar);
+        buttonPanel.add(btnLimpiar);
 
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(formPanel, BorderLayout.CENTER);
+        topPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Tabla
         modeloTabla = new DefaultTableModel(new String[]{"ID", "ID Categoría", "Nombre"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-
         tabla = new JTable(modeloTabla);
         JScrollPane scroll = new JScrollPane(tabla);
-        scroll.setBounds(20, 180, 640, 250);
-        add(scroll);
+        scroll.setBorder(BorderFactory.createTitledBorder("Tipos de Producto Registrados"));
 
-        cargarTiposProducto();
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(scroll, BorderLayout.CENTER);
+        add(mainPanel);
+    }
 
+    private void setupListeners() {
         btnGuardar.addActionListener(e -> guardarTipoProducto());
         btnActualizar.addActionListener(e -> actualizarTipoProducto());
         btnEliminar.addActionListener(e -> eliminarTipoProducto());
         btnLimpiar.addActionListener(e -> limpiarCampos());
 
         tabla.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 seleccionarTipoDeTabla();
             }
         });
-
-        setVisible(true);
     }
 
     private void guardarTipoProducto() {
@@ -99,19 +95,18 @@ public class TiposProductoView extends JFrame {
             String nombre = txtNombre.getText().trim();
 
             if (nombre.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "El nombre es obligatorio", "Error", JOptionPane.ERROR_MESSAGE);
+                mostrarError("El nombre es obligatorio");
                 return;
             }
 
             controller.insertarTipoProducto(idCategoria, nombre);
-            JOptionPane.showMessageDialog(this, "Tipo de producto guardado correctamente");
+            mostrarMensaje("Tipo de producto guardado correctamente");
             limpiarCampos();
             cargarTiposProducto();
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "ID Categoría debe ser un número válido", "Error", JOptionPane.ERROR_MESSAGE);
+            mostrarError("ID Categoría debe ser un número válido");
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+            mostrarError("Error al guardar: " + ex.getMessage());
         }
     }
 
@@ -123,22 +118,21 @@ public class TiposProductoView extends JFrame {
                 String nombre = txtNombre.getText().trim();
 
                 if (nombre.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "El nombre es obligatorio", "Error", JOptionPane.ERROR_MESSAGE);
+                    mostrarError("El nombre es obligatorio");
                     return;
                 }
 
                 controller.actualizarTipoProducto(idTipo, idCategoria, nombre);
-                JOptionPane.showMessageDialog(this, "Tipo de producto actualizado correctamente");
+                mostrarMensaje("Tipo de producto actualizado correctamente");
                 limpiarCampos();
                 cargarTiposProducto();
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "IDs deben ser números válidos", "Error", JOptionPane.ERROR_MESSAGE);
+                mostrarError("IDs deben ser números válidos");
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error al actualizar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
+                mostrarError("Error al actualizar: " + ex.getMessage());
             }
         } else {
-            JOptionPane.showMessageDialog(this, "Seleccione un tipo para actualizar", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            mostrarAdvertencia("Seleccione un tipo para actualizar");
         }
     }
 
@@ -153,16 +147,15 @@ public class TiposProductoView extends JFrame {
                 try {
                     int idTipo = Integer.parseInt(txtId.getText());
                     controller.eliminarTipoProducto(idTipo);
-                    JOptionPane.showMessageDialog(this, "Tipo de producto eliminado correctamente");
+                    mostrarMensaje("Tipo de producto eliminado correctamente");
                     limpiarCampos();
                     cargarTiposProducto();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Error al eliminar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                    ex.printStackTrace();
+                    mostrarError("Error al eliminar: " + ex.getMessage());
                 }
             }
         } else {
-            JOptionPane.showMessageDialog(this, "Seleccione un tipo para eliminar", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            mostrarAdvertencia("Seleccione un tipo para eliminar");
         }
     }
 
@@ -175,22 +168,13 @@ public class TiposProductoView extends JFrame {
         }
     }
 
-    private void limpiarCampos() {
-        txtId.setText("");
-        txtIdCategoria.setText("");
-        txtNombre.setText("");
-    }
-
     private void cargarTiposProducto() {
         try {
             modeloTabla.setRowCount(0);
-
             List<TiposProducto> listaTipos = controller.obtenerTodosLosTiposProducto();
 
             if (listaTipos.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
-                        "No hay tipos de producto registrados",
-                        "Información", JOptionPane.INFORMATION_MESSAGE);
+                mostrarInformacion("No hay tipos de producto registrados");
             } else {
                 for (TiposProducto tipo : listaTipos) {
                     modeloTabla.addRow(new Object[]{
@@ -201,14 +185,53 @@ public class TiposProductoView extends JFrame {
                 }
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this,
-                    "Error al cargar tipos: " + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+            mostrarError("Error al cargar tipos: " + e.getMessage());
         }
     }
 
+    private void limpiarCampos() {
+        txtId.setText("");
+        txtIdCategoria.setText("");
+        txtNombre.setText("");
+    }
+
+    private JTextField createTextField(boolean enabled) {
+        JTextField field = new JTextField();
+        field.setPreferredSize(new Dimension(200, 25));
+        field.setEnabled(enabled);
+        return field;
+    }
+
+    private void addFormField(JPanel panel, GridBagConstraints gbc, String label, JTextField field, int row) {
+        gbc.gridy = row;
+        gbc.gridx = 0;
+        panel.add(new JLabel(label), gbc);
+        gbc.gridx = 1;
+        panel.add(field, gbc);
+    }
+
+    private void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Información", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void mostrarAdvertencia(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Advertencia", JOptionPane.WARNING_MESSAGE);
+    }
+
+    private void mostrarInformacion(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Información", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new TiposProductoView());
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+        } catch (Exception e) {
+            System.err.println("No se pudo aplicar FlatLaf.");
+        }
+        SwingUtilities.invokeLater(() -> new TiposProductoView().setVisible(true));
     }
 }

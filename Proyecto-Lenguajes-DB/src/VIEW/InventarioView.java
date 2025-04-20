@@ -2,11 +2,13 @@ package VIEW;
 
 import CONTROLLER.InventarioController;
 import MODEL.Inventario;
+import com.formdev.flatlaf.FlatDarkLaf;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.*;
-import java.util.List;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 public class InventarioView extends JFrame {
 
@@ -20,74 +22,87 @@ public class InventarioView extends JFrame {
 
     public InventarioView() {
         controller = new InventarioController();
+        initComponents();
+        setupListeners();
+        cargarMovimientos();
+    }
 
+    private void initComponents() {
         setTitle("Gestión de Inventario");
-        setSize(850, 500);
-        setLayout(null);
+        setSize(900, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
 
-        JLabel lblId = new JLabel("ID Movimiento:");
-        lblId.setBounds(20, 20, 120, 25);
-        add(lblId);
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        txtId = new JTextField();
-        txtId.setBounds(150, 20, 200, 25);
-        txtId.setEnabled(false);
-        add(txtId);
+        // Panel formulario
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBorder(BorderFactory.createTitledBorder("Datos del Movimiento de Inventario"));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.anchor = GridBagConstraints.WEST;
 
-        JLabel lblProducto = new JLabel("ID Producto:");
-        lblProducto.setBounds(20, 60, 120, 25);
-        add(lblProducto);
+        addFormField(formPanel, gbc, "ID Movimiento:", txtId = createTextField(false), 0);
+        addFormField(formPanel, gbc, "ID Producto:", txtProducto = createTextField(true), 1);
 
-        txtProducto = new JTextField();
-        txtProducto.setBounds(150, 60, 200, 25);
-        add(txtProducto);
-
-        JLabel lblTipo = new JLabel("Tipo Movimiento:");
-        lblTipo.setBounds(20, 100, 120, 25);
-        add(lblTipo);
-
+        // ComboBox para Tipo de Movimiento
+        gbc.gridy = 2;
+        gbc.gridx = 0;
+        formPanel.add(new JLabel("Tipo Movimiento:"), gbc);
+        gbc.gridx = 1;
         cmbTipoMovimiento = new JComboBox<>(new String[]{"entrada", "salida"});
-        cmbTipoMovimiento.setBounds(150, 100, 200, 25);
-        add(cmbTipoMovimiento);
+        cmbTipoMovimiento.setPreferredSize(new Dimension(200, 25));
+        formPanel.add(cmbTipoMovimiento, gbc);
 
-        JLabel lblCantidad = new JLabel("Cantidad (kg):");
-        lblCantidad.setBounds(20, 140, 120, 25);
-        add(lblCantidad);
+        addFormField(formPanel, gbc, "Cantidad (kg):", txtCantidad = createTextField(true), 3);
+        addFormField(formPanel, gbc, "ID Detalle Pedido:", txtDetallePedido = createTextField(true), 4);
 
-        txtCantidad = new JTextField();
-        txtCantidad.setBounds(150, 140, 200, 25);
-        add(txtCantidad);
-
-        JLabel lblDetalle = new JLabel("ID Detalle Pedido:");
-        lblDetalle.setBounds(20, 180, 120, 25);
-        add(lblDetalle);
-
-        txtDetallePedido = new JTextField();
-        txtDetallePedido.setBounds(150, 180, 200, 25);
-        add(txtDetallePedido);
-
+        // Panel de botones
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         btnGuardar = new JButton("Guardar");
-        btnGuardar.setBounds(370, 60, 120, 30);
-        add(btnGuardar);
-
         btnActualizar = new JButton("Actualizar");
-        btnActualizar.setBounds(370, 100, 120, 30);
-        add(btnActualizar);
-
         btnEliminar = new JButton("Eliminar");
-        btnEliminar.setBounds(370, 140, 120, 30);
-        add(btnEliminar);
+        buttonPanel.add(btnGuardar);
+        buttonPanel.add(btnActualizar);
+        buttonPanel.add(btnEliminar);
 
-        modeloTabla = new DefaultTableModel(new String[]{"ID", "Producto", "Tipo", "Cantidad", "Fecha", "Detalle Pedido"}, 0);
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(formPanel, BorderLayout.CENTER);
+        topPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Configuración de la tabla
+        modeloTabla = new DefaultTableModel(
+                new String[]{"ID", "Producto", "Tipo", "Cantidad", "Fecha", "Detalle Pedido"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         tabla = new JTable(modeloTabla);
         JScrollPane scroll = new JScrollPane(tabla);
-        scroll.setBounds(20, 230, 800, 200);
-        add(scroll);
+        scroll.setBorder(BorderFactory.createTitledBorder("Movimientos de Inventario Registrados"));
 
-        cargarMovimientos();
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(scroll, BorderLayout.CENTER);
+        add(mainPanel);
+    }
 
-        btnGuardar.addActionListener(e -> {
+    private void setupListeners() {
+        btnGuardar.addActionListener(e -> guardarMovimiento());
+        btnActualizar.addActionListener(e -> actualizarMovimiento());
+        btnEliminar.addActionListener(e -> eliminarMovimiento());
+
+        tabla.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                seleccionarMovimientoDeTabla();
+            }
+        });
+    }
+
+    private void guardarMovimiento() {
+        try {
             Integer detallePedido = txtDetallePedido.getText().isEmpty() ? null : Integer.parseInt(txtDetallePedido.getText());
             controller.insertarMovimiento(
                     Integer.parseInt(txtProducto.getText()),
@@ -97,10 +112,14 @@ public class InventarioView extends JFrame {
             );
             limpiarCampos();
             cargarMovimientos();
-        });
+        } catch (Exception ex) {
+            mostrarError("Datos inválidos: " + ex.getMessage());
+        }
+    }
 
-        btnActualizar.addActionListener(e -> {
-            if (!txtId.getText().isEmpty()) {
+    private void actualizarMovimiento() {
+        if (!txtId.getText().isEmpty()) {
+            try {
                 Integer detallePedido = txtDetallePedido.getText().isEmpty() ? null : Integer.parseInt(txtDetallePedido.getText());
                 controller.actualizarMovimiento(
                         Integer.parseInt(txtId.getText()),
@@ -111,39 +130,36 @@ public class InventarioView extends JFrame {
                 );
                 limpiarCampos();
                 cargarMovimientos();
+            } catch (Exception ex) {
+                mostrarError("Error al actualizar: " + ex.getMessage());
             }
-        });
+        } else {
+            mostrarError("Selecciona un movimiento para actualizar.");
+        }
+    }
 
-        btnEliminar.addActionListener(e -> {
-            if (!txtId.getText().isEmpty()) {
-                int id = Integer.parseInt(txtId.getText());
-                controller.eliminarMovimiento(id);
+    private void eliminarMovimiento() {
+        if (!txtId.getText().isEmpty()) {
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "¿Deseas eliminar este movimiento?", "Confirmar", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                controller.eliminarMovimiento(Integer.parseInt(txtId.getText()));
                 limpiarCampos();
                 cargarMovimientos();
             }
-        });
-
-        tabla.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                int fila = tabla.getSelectedRow();
-                txtId.setText(modeloTabla.getValueAt(fila, 0).toString());
-                txtProducto.setText(modeloTabla.getValueAt(fila, 1).toString());
-                cmbTipoMovimiento.setSelectedItem(modeloTabla.getValueAt(fila, 2));
-                txtCantidad.setText(modeloTabla.getValueAt(fila, 3).toString());
-                Object detalle = modeloTabla.getValueAt(fila, 5);
-                txtDetallePedido.setText(detalle != null ? detalle.toString() : "");
-            }
-        });
-
-        setVisible(true);
+        } else {
+            mostrarError("Selecciona un movimiento para eliminar.");
+        }
     }
 
-    private void limpiarCampos() {
-        txtId.setText("");
-        txtProducto.setText("");
-        cmbTipoMovimiento.setSelectedIndex(0);
-        txtCantidad.setText("");
-        txtDetallePedido.setText("");
+    private void seleccionarMovimientoDeTabla() {
+        int fila = tabla.getSelectedRow();
+        txtId.setText(modeloTabla.getValueAt(fila, 0).toString());
+        txtProducto.setText(modeloTabla.getValueAt(fila, 1).toString());
+        cmbTipoMovimiento.setSelectedItem(modeloTabla.getValueAt(fila, 2));
+        txtCantidad.setText(modeloTabla.getValueAt(fila, 3).toString());
+        Object detalle = modeloTabla.getValueAt(fila, 5);
+        txtDetallePedido.setText(detalle != null ? detalle.toString() : "");
     }
 
     private void cargarMovimientos() {
@@ -161,7 +177,39 @@ public class InventarioView extends JFrame {
         }
     }
 
+    private void limpiarCampos() {
+        txtId.setText("");
+        txtProducto.setText("");
+        cmbTipoMovimiento.setSelectedIndex(0);
+        txtCantidad.setText("");
+        txtDetallePedido.setText("");
+    }
+
+    private JTextField createTextField(boolean enabled) {
+        JTextField field = new JTextField();
+        field.setPreferredSize(new Dimension(200, 25));
+        field.setEnabled(enabled);
+        return field;
+    }
+
+    private void addFormField(JPanel panel, GridBagConstraints gbc, String label, JTextField field, int row) {
+        gbc.gridy = row;
+        gbc.gridx = 0;
+        panel.add(new JLabel(label), gbc);
+        gbc.gridx = 1;
+        panel.add(field, gbc);
+    }
+
+    private void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
     public static void main(String[] args) {
-        new InventarioView();
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+        } catch (Exception e) {
+            System.err.println("No se pudo aplicar FlatLaf.");
+        }
+        SwingUtilities.invokeLater(() -> new InventarioView().setVisible(true));
     }
 }

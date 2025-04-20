@@ -2,8 +2,11 @@ package VIEW;
 
 import CONTROLLER.MetodoPagoController;
 import MODEL.MetodoPago;
+import com.formdev.flatlaf.FlatDarkLaf;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
@@ -17,70 +20,105 @@ public class MetodoPagoView extends JFrame {
 
     public MetodoPagoView() {
         controller = new MetodoPagoController();
+        initComponents();
+        setupListeners();
+        cargarMetodosPago();
+    }
 
+    private void initComponents() {
         setTitle("Gestión de Métodos de Pago");
-        setSize(600, 400);
-        setLayout(null);
+        setSize(600, 450);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
 
-        JLabel lblId = new JLabel("ID:");
-        lblId.setBounds(20, 20, 100, 25);
-        add(lblId);
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        txtId = new JTextField();
-        txtId.setBounds(130, 20, 200, 25);
-        txtId.setEnabled(false);
-        add(txtId);
+        // Panel formulario
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBorder(BorderFactory.createTitledBorder("Datos del Método de Pago"));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.anchor = GridBagConstraints.WEST;
 
-        JLabel lblNombre = new JLabel("Nombre:");
-        lblNombre.setBounds(20, 60, 100, 25);
-        add(lblNombre);
+        addFormField(formPanel, gbc, "ID:", txtId = createTextField(false), 0);
+        addFormField(formPanel, gbc, "Nombre:", txtNombre = createTextField(true), 1);
 
-        txtNombre = new JTextField();
-        txtNombre.setBounds(130, 60, 200, 25);
-        add(txtNombre);
-
+        // Botones
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         btnGuardar = new JButton("Guardar");
-        btnGuardar.setBounds(350, 20, 100, 30);
-        add(btnGuardar);
-
         btnActualizar = new JButton("Actualizar");
-        btnActualizar.setBounds(350, 60, 100, 30);
-        add(btnActualizar);
-
         btnEliminar = new JButton("Eliminar");
-        btnEliminar.setBounds(350, 100, 100, 30);
-        add(btnEliminar);
+        buttonPanel.add(btnGuardar);
+        buttonPanel.add(btnActualizar);
+        buttonPanel.add(btnEliminar);
 
-        modeloTabla = new DefaultTableModel(new String[]{"ID", "Nombre"}, 0);
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(formPanel, BorderLayout.CENTER);
+        topPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Tabla
+        modeloTabla = new DefaultTableModel(new String[]{"ID", "Nombre"}, 0) {
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         tabla = new JTable(modeloTabla);
         JScrollPane scroll = new JScrollPane(tabla);
-        scroll.setBounds(20, 150, 550, 200);
-        add(scroll);
+        scroll.setBorder(BorderFactory.createTitledBorder("Métodos de Pago Registrados"));
 
-        cargarMetodosPago();
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(scroll, BorderLayout.CENTER);
+        add(mainPanel);
+    }
 
+    private void setupListeners() {
         btnGuardar.addActionListener(e -> {
-            controller.insertarMetodoPago(txtNombre.getText());
-            limpiarCampos();
-            cargarMetodosPago();
+            String nombre = txtNombre.getText().trim();
+            if (!nombre.isEmpty()) {
+                controller.insertarMetodoPago(nombre);
+                limpiarCampos();
+                cargarMetodosPago();
+            } else {
+                mostrarError("El campo 'Nombre' no puede estar vacío.");
+            }
         });
 
         btnActualizar.addActionListener(e -> {
             if (!txtId.getText().isEmpty()) {
-                int id = Integer.parseInt(txtId.getText());
-                controller.actualizarMetodoPago(id, txtNombre.getText());
-                limpiarCampos();
-                cargarMetodosPago();
+                try {
+                    int id = Integer.parseInt(txtId.getText());
+                    String nombre = txtNombre.getText().trim();
+                    if (!nombre.isEmpty()) {
+                        controller.actualizarMetodoPago(id, nombre);
+                        limpiarCampos();
+                        cargarMetodosPago();
+                    } else {
+                        mostrarError("El campo 'Nombre' no puede estar vacío.");
+                    }
+                } catch (NumberFormatException ex) {
+                    mostrarError("ID inválido.");
+                }
+            } else {
+                mostrarError("Selecciona un método de pago para actualizar.");
             }
         });
 
         btnEliminar.addActionListener(e -> {
             if (!txtId.getText().isEmpty()) {
-                int id = Integer.parseInt(txtId.getText());
-                controller.eliminarMetodoPago(id);
-                limpiarCampos();
-                cargarMetodosPago();
+                int confirm = JOptionPane.showConfirmDialog(this, "¿Deseas eliminar este método de pago?", "Confirmar", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    try {
+                        int id = Integer.parseInt(txtId.getText());
+                        controller.eliminarMetodoPago(id);
+                        limpiarCampos();
+                        cargarMetodosPago();
+                    } catch (NumberFormatException ex) {
+                        mostrarError("ID inválido.");
+                    }
+                }
+            } else {
+                mostrarError("Selecciona un método de pago para eliminar.");
             }
         });
 
@@ -91,13 +129,6 @@ public class MetodoPagoView extends JFrame {
                 txtNombre.setText(modeloTabla.getValueAt(fila, 1).toString());
             }
         });
-
-        setVisible(true);
-    }
-
-    private void limpiarCampos() {
-        txtId.setText("");
-        txtNombre.setText("");
     }
 
     private void cargarMetodosPago() {
@@ -111,7 +142,36 @@ public class MetodoPagoView extends JFrame {
         }
     }
 
+    private void limpiarCampos() {
+        txtId.setText("");
+        txtNombre.setText("");
+    }
+
+    private JTextField createTextField(boolean enabled) {
+        JTextField field = new JTextField();
+        field.setPreferredSize(new Dimension(200, 25));
+        field.setEnabled(enabled);
+        return field;
+    }
+
+    private void addFormField(JPanel panel, GridBagConstraints gbc, String label, JTextField field, int row) {
+        gbc.gridy = row;
+        gbc.gridx = 0;
+        panel.add(new JLabel(label), gbc);
+        gbc.gridx = 1;
+        panel.add(field, gbc);
+    }
+
+    private void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
     public static void main(String[] args) {
-        new MetodoPagoView();
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+        } catch (Exception e) {
+            System.err.println("No se pudo aplicar FlatLaf.");
+        }
+        SwingUtilities.invokeLater(() -> new MetodoPagoView().setVisible(true));
     }
 }

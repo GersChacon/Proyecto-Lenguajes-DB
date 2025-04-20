@@ -2,14 +2,15 @@ package VIEW;
 
 import CONTROLLER.DetallePagoController;
 import MODEL.DetallePago;
-import SERVICE.BancosService;
-import SERVICE.MetodoPagoService;
+import com.formdev.flatlaf.FlatDarkLaf;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.*;
-import java.util.List;
-import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 public class DetallePagoView extends JFrame {
 
@@ -24,180 +25,181 @@ public class DetallePagoView extends JFrame {
 
     public DetallePagoView() {
         controller = new DetallePagoController();
-
-        setTitle("Gestión de Detalles de Pago");
-        setSize(900, 600);
-        setLayout(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-
-        MetodoPagoService metodoPagoService = new MetodoPagoService();
-        BancosService bancosService = new BancosService();
-
-        JLabel lblId = new JLabel("ID Detalle:");
-        lblId.setBounds(20, 20, 120, 25);
-        add(lblId);
-
-        txtId = new JTextField();
-        txtId.setBounds(150, 20, 200, 25);
-        txtId.setEnabled(false);
-        add(txtId);
-
-        JLabel lblPago = new JLabel("ID Pago:");
-        lblPago.setBounds(20, 60, 120, 25);
-        add(lblPago);
-
-        txtPago = new JTextField();
-        txtPago.setBounds(150, 60, 200, 25);
-        add(txtPago);
-
-        JLabel lblMetodoPago = new JLabel("Método Pago:");
-        lblMetodoPago.setBounds(20, 100, 120, 25);
-        add(lblMetodoPago);
-
-        cmbMetodoPago = new JComboBox<>();
-        cmbMetodoPago.setBounds(150, 100, 200, 25);
-        add(cmbMetodoPago);
-
-        JLabel lblBanco = new JLabel("ID Banco:");
-        lblBanco.setBounds(20, 140, 120, 25);
-        add(lblBanco);
-
-        txtBanco = new JTextField();
-        txtBanco.setBounds(150, 140, 200, 25);
-        add(txtBanco);
-
-        JLabel lblNumeroTarjeta = new JLabel("Número Tarjeta:");
-        lblNumeroTarjeta.setBounds(20, 180, 120, 25);
-        add(lblNumeroTarjeta);
-
-        txtNumeroTarjeta = new JTextField();
-        txtNumeroTarjeta.setBounds(150, 180, 200, 25);
-        add(txtNumeroTarjeta);
-
-        JLabel lblNombreTitular = new JLabel("Nombre Titular:");
-        lblNombreTitular.setBounds(20, 220, 120, 25);
-        add(lblNombreTitular);
-
-        txtNombreTitular = new JTextField();
-        txtNombreTitular.setBounds(150, 220, 200, 25);
-        add(txtNombreTitular);
-
-        JLabel lblFechaExpiracion = new JLabel("Fecha Expiración:");
-        lblFechaExpiracion.setBounds(20, 260, 120, 25);
-        add(lblFechaExpiracion);
-
-        txtFechaExpiracion = new JFormattedTextField(dateFormat);
-        txtFechaExpiracion.setBounds(150, 260, 200, 25);
-        add(txtFechaExpiracion);
-
-        JLabel lblNumeroTransferencia = new JLabel("Número Transferencia:");
-        lblNumeroTransferencia.setBounds(20, 300, 120, 25);
-        add(lblNumeroTransferencia);
-
-        txtNumeroTransferencia = new JTextField();
-        txtNumeroTransferencia.setBounds(150, 300, 200, 25);
-        add(txtNumeroTransferencia);
-
-        btnGuardar = new JButton("Guardar");
-        btnGuardar.setBounds(370, 60, 120, 30);
-        add(btnGuardar);
-
-        btnActualizar = new JButton("Actualizar");
-        btnActualizar.setBounds(370, 100, 120, 30);
-        add(btnActualizar);
-
-        btnEliminar = new JButton("Eliminar");
-        btnEliminar.setBounds(370, 140, 120, 30);
-        add(btnEliminar);
-
-        modeloTabla = new DefaultTableModel(new String[]{"ID", "ID Pago", "Método Pago", "Banco",
-            "Núm. Tarjeta", "Titular", "Expiración",
-            "Transferencia"}, 0);
-        tabla = new JTable(modeloTabla);
-        JScrollPane scroll = new JScrollPane(tabla);
-        scroll.setBounds(20, 350, 840, 200);
-        add(scroll);
-
+        initComponents();
+        setupListeners();
         cargarMetodosPago();
         cargarDetallesPago();
+    }
 
-        btnGuardar.addActionListener(e -> {
+    private void initComponents() {
+        setTitle("Gestión de Detalles de Pago");
+        setSize(900, 600);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        // Panel formulario
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBorder(BorderFactory.createTitledBorder("Datos del Detalle de Pago"));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        addFormField(formPanel, gbc, "ID:", txtId = createTextField(false), 0);
+        addFormField(formPanel, gbc, "ID Pago:", txtPago = createTextField(true), 1);
+        
+        gbc.gridy = 2;
+        gbc.gridx = 0;
+        formPanel.add(new JLabel("Método Pago:"), gbc);
+        
+        gbc.gridx = 1;
+        cmbMetodoPago = new JComboBox<>();
+        cmbMetodoPago.setPreferredSize(new Dimension(200, 25));
+        formPanel.add(cmbMetodoPago, gbc);
+
+        addFormField(formPanel, gbc, "ID Banco:", txtBanco = createTextField(true), 3);
+        addFormField(formPanel, gbc, "Número Tarjeta:", txtNumeroTarjeta = createTextField(true), 4);
+        addFormField(formPanel, gbc, "Nombre Titular:", txtNombreTitular = createTextField(true), 5);
+        
+        gbc.gridy = 6;
+        gbc.gridx = 0;
+        formPanel.add(new JLabel("Fecha Expiración:"), gbc);
+        
+        gbc.gridx = 1;
+        txtFechaExpiracion = new JFormattedTextField(dateFormat);
+        txtFechaExpiracion.setPreferredSize(new Dimension(200, 25));
+        formPanel.add(txtFechaExpiracion, gbc);
+
+        addFormField(formPanel, gbc, "Número Transferencia:", txtNumeroTransferencia = createTextField(true), 7);
+
+        // Botones
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        btnGuardar = new JButton("Guardar");
+        btnActualizar = new JButton("Actualizar");
+        btnEliminar = new JButton("Eliminar");
+        buttonPanel.add(btnGuardar);
+        buttonPanel.add(btnActualizar);
+        buttonPanel.add(btnEliminar);
+
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(formPanel, BorderLayout.CENTER);
+        topPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Tabla
+        modeloTabla = new DefaultTableModel(
+            new String[]{"ID", "ID Pago", "Método", "Banco", "Tarjeta", "Titular", "Expiración", "Transferencia"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        
+        tabla = new JTable(modeloTabla);
+        tabla.setRowHeight(25);
+        JScrollPane scroll = new JScrollPane(tabla);
+        scroll.setBorder(BorderFactory.createTitledBorder("Detalles de Pago Registrados"));
+
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(scroll, BorderLayout.CENTER);
+        add(mainPanel);
+    }
+
+    private void setupListeners() {
+        btnGuardar.addActionListener(e -> guardarDetallePago());
+        btnActualizar.addActionListener(e -> actualizarDetallePago());
+        btnEliminar.addActionListener(e -> eliminarDetallePago());
+        
+        tabla.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int fila = tabla.getSelectedRow();
+                if (fila >= 0) {
+                    txtId.setText(modeloTabla.getValueAt(fila, 0).toString());
+                    txtPago.setText(modeloTabla.getValueAt(fila, 1).toString());
+                    cmbMetodoPago.setSelectedItem(modeloTabla.getValueAt(fila, 2));
+                    txtBanco.setText(modeloTabla.getValueAt(fila, 3) != null ? modeloTabla.getValueAt(fila, 3).toString() : "");
+                    txtNumeroTarjeta.setText(modeloTabla.getValueAt(fila, 4).toString());
+                    txtNombreTitular.setText(modeloTabla.getValueAt(fila, 5).toString());
+                    txtFechaExpiracion.setText(modeloTabla.getValueAt(fila, 6) != null ? modeloTabla.getValueAt(fila, 6).toString() : "");
+                    txtNumeroTransferencia.setText(modeloTabla.getValueAt(fila, 7) != null ? modeloTabla.getValueAt(fila, 7).toString() : "");
+                }
+            }
+        });
+    }
+
+    private void guardarDetallePago() {
+        try {
+            String nombreTitular = txtNombreTitular.getText().trim();
+            if (nombreTitular.isEmpty()) {
+                mostrarError("El campo 'Nombre Titular' no puede estar vacío.");
+                return;
+            }
+            
+            controller.insertarDetallePago(
+                Integer.parseInt(txtPago.getText()),
+                cmbMetodoPago.getSelectedIndex() + 1,
+                txtBanco.getText().isEmpty() ? null : Integer.parseInt(txtBanco.getText()),
+                txtNumeroTarjeta.getText(),
+                nombreTitular,
+                txtFechaExpiracion.getText().isEmpty() ? null : dateFormat.parse(txtFechaExpiracion.getText()),
+                txtNumeroTransferencia.getText()
+            );
+            limpiarCampos();
+            cargarDetallesPago();
+        } catch (Exception ex) {
+            mostrarError("Error al guardar: " + ex.getMessage());
+        }
+    }
+
+    private void actualizarDetallePago() {
+        if (!txtId.getText().isEmpty()) {
             try {
-                controller.insertarDetallePago(
-                        Integer.parseInt(txtPago.getText()),
-                        cmbMetodoPago.getSelectedIndex() + 1,
-                        txtBanco.getText().isEmpty() ? null : Integer.parseInt(txtBanco.getText()),
-                        txtNumeroTarjeta.getText(),
-                        txtNombreTitular.getText(),
-                        txtFechaExpiracion.getText().isEmpty() ? null : dateFormat.parse(txtFechaExpiracion.getText()),
-                        txtNumeroTransferencia.getText()
+                String nombreTitular = txtNombreTitular.getText().trim();
+                if (nombreTitular.isEmpty()) {
+                    mostrarError("El campo 'Nombre Titular' no puede estar vacío.");
+                    return;
+                }
+                
+                controller.actualizarDetallePago(
+                    Integer.parseInt(txtId.getText()),
+                    Integer.parseInt(txtPago.getText()),
+                    cmbMetodoPago.getSelectedIndex() + 1,
+                    txtBanco.getText().isEmpty() ? null : Integer.parseInt(txtBanco.getText()),
+                    txtNumeroTarjeta.getText(),
+                    nombreTitular,
+                    txtFechaExpiracion.getText().isEmpty() ? null : dateFormat.parse(txtFechaExpiracion.getText()),
+                    txtNumeroTransferencia.getText()
                 );
                 limpiarCampos();
                 cargarDetallesPago();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                mostrarError("Error al actualizar: " + ex.getMessage());
             }
-        });
+        } else {
+            mostrarError("Selecciona un detalle de pago para actualizar.");
+        }
+    }
 
-        btnActualizar.addActionListener(e -> {
-            if (!txtId.getText().isEmpty()) {
-                try {
-                    controller.actualizarDetallePago(
-                            Integer.parseInt(txtId.getText()),
-                            Integer.parseInt(txtPago.getText()),
-                            cmbMetodoPago.getSelectedIndex() + 1,
-                            txtBanco.getText().isEmpty() ? null : Integer.parseInt(txtBanco.getText()),
-                            txtNumeroTarjeta.getText(),
-                            txtNombreTitular.getText(),
-                            txtFechaExpiracion.getText().isEmpty() ? null : dateFormat.parse(txtFechaExpiracion.getText()),
-                            txtNumeroTransferencia.getText()
-                    );
-                    limpiarCampos();
-                    cargarDetallesPago();
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
-        btnEliminar.addActionListener(e -> {
-            if (!txtId.getText().isEmpty()) {
-                int id = Integer.parseInt(txtId.getText());
-                controller.eliminarDetallePago(id);
+    private void eliminarDetallePago() {
+        if (!txtId.getText().isEmpty()) {
+            int confirm = JOptionPane.showConfirmDialog(
+                this, 
+                "¿Estás seguro de eliminar este detalle de pago?", 
+                "Confirmar Eliminación", 
+                JOptionPane.YES_NO_OPTION
+            );
+            
+            if (confirm == JOptionPane.YES_OPTION) {
+                controller.eliminarDetallePago(Integer.parseInt(txtId.getText()));
                 limpiarCampos();
                 cargarDetallesPago();
             }
-        });
-
-        tabla.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                int fila = tabla.getSelectedRow();
-                txtId.setText(modeloTabla.getValueAt(fila, 0).toString());
-                txtPago.setText(modeloTabla.getValueAt(fila, 1).toString());
-                cmbMetodoPago.setSelectedItem(modeloTabla.getValueAt(fila, 2));
-                Object banco = modeloTabla.getValueAt(fila, 3);
-                txtBanco.setText(banco != null ? banco.toString() : "");
-                txtNumeroTarjeta.setText(modeloTabla.getValueAt(fila, 4).toString());
-                txtNombreTitular.setText(modeloTabla.getValueAt(fila, 5).toString());
-                Object fecha = modeloTabla.getValueAt(fila, 6);
-                txtFechaExpiracion.setText(fecha != null ? fecha.toString() : "");
-                Object transferencia = modeloTabla.getValueAt(fila, 7);
-                txtNumeroTransferencia.setText(transferencia != null ? transferencia.toString() : "");
-            }
-        });
-
-        setVisible(true);
-    }
-
-    private void limpiarCampos() {
-        txtId.setText("");
-        txtPago.setText("");
-        cmbMetodoPago.setSelectedIndex(0);
-        txtBanco.setText("");
-        txtNumeroTarjeta.setText("");
-        txtNombreTitular.setText("");
-        txtFechaExpiracion.setText("");
-        txtNumeroTransferencia.setText("");
+        } else {
+            mostrarError("Selecciona un detalle de pago para eliminar.");
+        }
     }
 
     private void cargarMetodosPago() {
@@ -213,7 +215,8 @@ public class DetallePagoView extends JFrame {
             modeloTabla.addRow(new Object[]{
                 detalle.getIdDetallePago(),
                 detalle.getIdPago(),
-                detalle.getIdMetodoPago(),
+                detalle.getIdMetodoPago() == 1 ? "Efectivo" : 
+                    detalle.getIdMetodoPago() == 2 ? "Tarjeta" : "Transferencia",
                 detalle.getIdBanco(),
                 detalle.getNumeroTarjeta(),
                 detalle.getNombreTitular(),
@@ -223,7 +226,42 @@ public class DetallePagoView extends JFrame {
         }
     }
 
+    private void limpiarCampos() {
+        txtId.setText("");
+        txtPago.setText("");
+        cmbMetodoPago.setSelectedIndex(0);
+        txtBanco.setText("");
+        txtNumeroTarjeta.setText("");
+        txtNombreTitular.setText("");
+        txtFechaExpiracion.setText("");
+        txtNumeroTransferencia.setText("");
+    }
+
+    private JTextField createTextField(boolean enabled) {
+        JTextField field = new JTextField();
+        field.setPreferredSize(new Dimension(200, 25));
+        field.setEnabled(enabled);
+        return field;
+    }
+
+    private void addFormField(JPanel panel, GridBagConstraints gbc, String label, JComponent field, int row) {
+        gbc.gridy = row;
+        gbc.gridx = 0;
+        panel.add(new JLabel(label), gbc);
+        gbc.gridx = 1;
+        panel.add(field, gbc);
+    }
+
+    private void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
     public static void main(String[] args) {
-        new DetallePagoView();
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+        } catch (Exception e) {
+            System.err.println("No se pudo aplicar FlatLaf.");
+        }
+        SwingUtilities.invokeLater(() -> new DetallePagoView().setVisible(true));
     }
 }

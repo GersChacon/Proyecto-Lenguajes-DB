@@ -2,8 +2,10 @@ package VIEW;
 
 import CONTROLLER.CategoriasController;
 import MODEL.Categorias;
+import com.formdev.flatlaf.FlatDarkLaf;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
@@ -17,57 +19,78 @@ public class CategoriasView extends JFrame {
 
     public CategoriasView() {
         controller = new CategoriasController();
-
-        setTitle("Gestión de Categorías");
-        setSize(500, 400);
-        setLayout(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-
-        JLabel lblId = new JLabel("ID:");
-        lblId.setBounds(20, 20, 100, 25);
-        add(lblId);
-
-        txtId = new JTextField();
-        txtId.setBounds(130, 20, 200, 25);
-        txtId.setEnabled(false);
-        add(txtId);
-
-        JLabel lblNombre = new JLabel("Nombre:");
-        lblNombre.setBounds(20, 60, 100, 25);
-        add(lblNombre);
-
-        txtNombre = new JTextField();
-        txtNombre.setBounds(130, 60, 200, 25);
-        add(txtNombre);
-
-        btnGuardar = new JButton("Guardar");
-        btnGuardar.setBounds(350, 60, 100, 30);
-        add(btnGuardar);
-
-        btnActualizar = new JButton("Actualizar");
-        btnActualizar.setBounds(350, 100, 100, 30);
-        add(btnActualizar);
-
-        btnEliminar = new JButton("Eliminar");
-        btnEliminar.setBounds(350, 140, 100, 30);
-        add(btnEliminar);
-
-        modeloTabla = new DefaultTableModel(new String[]{"ID", "Nombre"}, 0);
-        tabla = new JTable(modeloTabla);
-        JScrollPane scroll = new JScrollPane(tabla);
-        scroll.setBounds(20, 200, 430, 140);
-        add(scroll);
-
+        initComponents();
+        setupListeners();
         cargarCategorias();
+    }
 
+    private void initComponents() {
+        setTitle("Gestión de Categorías");
+        setSize(600, 450);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        // Panel principal con márgenes
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        // Panel de formulario
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBorder(BorderFactory.createTitledBorder("Datos de Categoría"));
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.anchor = GridBagConstraints.WEST;
+
+        // Campos del formulario
+        addFormField(formPanel, gbc, "ID:", txtId = createTextField(false), 0);
+        addFormField(formPanel, gbc, "Nombre:", txtNombre = createTextField(true), 1);
+
+        // Panel de botones
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        btnGuardar = new JButton("Guardar");
+        btnActualizar = new JButton("Actualizar");
+        btnEliminar = new JButton("Eliminar");
+        buttonPanel.add(btnGuardar);
+        buttonPanel.add(btnActualizar);
+        buttonPanel.add(btnEliminar);
+
+        // Panel superior (formulario + botones)
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(formPanel, BorderLayout.CENTER);
+        topPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Configuración de la tabla
+        modeloTabla = new DefaultTableModel(new String[]{"ID", "Nombre"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        
+        tabla = new JTable(modeloTabla);
+        styleTable(tabla);
+        
+        JScrollPane scroll = new JScrollPane(tabla);
+        scroll.setBorder(BorderFactory.createTitledBorder("Categorías Registradas"));
+
+        // Ensamblar la interfaz
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(scroll, BorderLayout.CENTER);
+        add(mainPanel);
+    }
+
+    private void setupListeners() {
         btnGuardar.addActionListener(e -> {
-            controller.insertarCategoria(txtNombre.getText());
-            limpiarCampos();
-            cargarCategorias();
+            if (validarCampos()) {
+                controller.insertarCategoria(txtNombre.getText());
+                limpiarCampos();
+                cargarCategorias();
+            }
         });
 
         btnActualizar.addActionListener(e -> {
-            if (!txtId.getText().isEmpty()) {
+            if (!txtId.getText().isEmpty() && validarCampos()) {
                 int id = Integer.parseInt(txtId.getText());
                 controller.actualizarCategoria(id, txtNombre.getText());
                 limpiarCampos();
@@ -77,22 +100,38 @@ public class CategoriasView extends JFrame {
 
         btnEliminar.addActionListener(e -> {
             if (!txtId.getText().isEmpty()) {
-                int id = Integer.parseInt(txtId.getText());
-                controller.eliminarCategoria(id);
-                limpiarCampos();
-                cargarCategorias();
+                int confirm = JOptionPane.showConfirmDialog(
+                    this, 
+                    "¿Confirmas que deseas eliminar esta categoría?", 
+                    "Confirmar eliminación", 
+                    JOptionPane.YES_NO_OPTION
+                );
+                
+                if (confirm == JOptionPane.YES_OPTION) {
+                    controller.eliminarCategoria(Integer.parseInt(txtId.getText()));
+                    limpiarCampos();
+                    cargarCategorias();
+                }
             }
         });
 
         tabla.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 int fila = tabla.getSelectedRow();
-                txtId.setText(modeloTabla.getValueAt(fila, 0).toString());
-                txtNombre.setText(modeloTabla.getValueAt(fila, 1).toString());
+                if (fila >= 0) {
+                    txtId.setText(modeloTabla.getValueAt(fila, 0).toString());
+                    txtNombre.setText(modeloTabla.getValueAt(fila, 1).toString());
+                }
             }
         });
+    }
 
-        setVisible(true);
+    private boolean validarCampos() {
+        if (txtNombre.getText().trim().isEmpty()) {
+            mostrarError("El campo 'Nombre' es obligatorio");
+            return false;
+        }
+        return true;
     }
 
     private void limpiarCampos() {
@@ -111,7 +150,38 @@ public class CategoriasView extends JFrame {
         }
     }
 
+    // Métodos auxiliares reutilizables
+    private JTextField createTextField(boolean enabled) {
+        JTextField field = new JTextField();
+        field.setPreferredSize(new Dimension(250, 25));
+        field.setEnabled(enabled);
+        return field;
+    }
+
+    private void addFormField(JPanel panel, GridBagConstraints gbc, String label, JTextField field, int row) {
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        panel.add(new JLabel(label), gbc);
+        gbc.gridx = 1;
+        panel.add(field, gbc);
+    }
+
+    private void styleTable(JTable table) {
+        table.setRowHeight(25);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+    }
+
+    private void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
     public static void main(String[] args) {
-        new CategoriasView();
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+        } catch (Exception ex) {
+            System.err.println("Error al cargar FlatLaf");
+        }
+        SwingUtilities.invokeLater(() -> new CategoriasView().setVisible(true));
     }
 }

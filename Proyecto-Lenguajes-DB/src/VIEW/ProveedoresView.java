@@ -2,6 +2,7 @@ package VIEW;
 
 import CONTROLLER.ProveedoresController;
 import MODEL.Proveedores;
+import com.formdev.flatlaf.FlatDarkLaf;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -18,83 +19,74 @@ public class ProveedoresView extends JFrame {
 
     public ProveedoresView() {
         controller = new ProveedoresController();
+        initComponents();
+        setupListeners();
+        cargarProveedores();
+    }
 
+    private void initComponents() {
         setTitle("Gestión de Proveedores");
-        setSize(800, 500);
-        setLayout(null);
+        setSize(850, 600); // Ajustado para mejor visualización
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
 
-        JLabel lblId = new JLabel("ID Proveedor:");
-        lblId.setBounds(20, 20, 100, 25);
-        add(lblId);
+        // Panel principal con márgenes
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        txtId = new JTextField();
-        txtId.setBounds(130, 20, 150, 25);
-        txtId.setEnabled(false);
-        add(txtId);
+        // Panel de formulario (GridBagLayout para alineación precisa)
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBorder(BorderFactory.createTitledBorder("Datos del Proveedor"));
 
-        JLabel lblNombre = new JLabel("Nombre:");
-        lblNombre.setBounds(20, 60, 100, 25);
-        add(lblNombre);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.anchor = GridBagConstraints.WEST;
 
-        txtNombre = new JTextField();
-        txtNombre.setBounds(130, 60, 200, 25);
-        add(txtNombre);
+        // Campos del formulario
+        addFormField(formPanel, gbc, "ID Proveedor:", txtId = createTextField(false), 0);
+        addFormField(formPanel, gbc, "Nombre:", txtNombre = createTextField(true), 1);
+        addFormField(formPanel, gbc, "Teléfono:", txtTelefono = createTextField(true), 2);
+        addFormField(formPanel, gbc, "Email:", txtEmail = createTextField(true), 3);
+        addFormField(formPanel, gbc, "Dirección:", txtDireccion = createTextField(true), 4);
 
-        JLabel lblTelefono = new JLabel("Teléfono:");
-        lblTelefono.setBounds(20, 100, 100, 25);
-        add(lblTelefono);
-
-        txtTelefono = new JTextField();
-        txtTelefono.setBounds(130, 100, 200, 25);
-        add(txtTelefono);
-
-        JLabel lblEmail = new JLabel("Email:");
-        lblEmail.setBounds(20, 140, 100, 25);
-        add(lblEmail);
-
-        txtEmail = new JTextField();
-        txtEmail.setBounds(130, 140, 200, 25);
-        add(txtEmail);
-
-        JLabel lblDireccion = new JLabel("Dirección:");
-        lblDireccion.setBounds(20, 180, 100, 25);
-        add(lblDireccion);
-
-        txtDireccion = new JTextField();
-        txtDireccion.setBounds(130, 180, 200, 25);
-        add(txtDireccion);
-
+        // Panel de botones (alineados a la derecha)
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         btnGuardar = new JButton("Guardar");
-        btnGuardar.setBounds(350, 60, 120, 30);
-        add(btnGuardar);
-
         btnActualizar = new JButton("Actualizar");
-        btnActualizar.setBounds(350, 100, 120, 30);
-        add(btnActualizar);
-
         btnEliminar = new JButton("Eliminar");
-        btnEliminar.setBounds(350, 140, 120, 30);
-        add(btnEliminar);
-
         btnLimpiar = new JButton("Limpiar");
-        btnLimpiar.setBounds(350, 180, 120, 30);
-        add(btnLimpiar);
+        buttonPanel.add(btnGuardar);
+        buttonPanel.add(btnActualizar);
+        buttonPanel.add(btnEliminar);
+        buttonPanel.add(btnLimpiar);
 
-        modeloTabla = new DefaultTableModel(new String[]{"ID", "Nombre", "Teléfono", "Email", "Dirección"}, 0) {
+        // Panel superior (formulario + botones)
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(formPanel, BorderLayout.CENTER);
+        topPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Configuración de la tabla
+        modeloTabla = new DefaultTableModel(
+            new String[]{"ID", "Nombre", "Teléfono", "Email", "Dirección"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-
+        
         tabla = new JTable(modeloTabla);
+        styleTable(tabla); // Aplicar estilos consistentes
+        
         JScrollPane scroll = new JScrollPane(tabla);
-        scroll.setBounds(20, 220, 740, 200);
-        add(scroll);
+        scroll.setBorder(BorderFactory.createTitledBorder("Proveedores Registrados"));
 
-        cargarProveedores();
+        // Ensamblar la interfaz
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(scroll, BorderLayout.CENTER);
+        add(mainPanel);
+    }
 
+    private void setupListeners() {
         btnGuardar.addActionListener(e -> guardarProveedor());
         btnActualizar.addActionListener(e -> actualizarProveedor());
         btnEliminar.addActionListener(e -> eliminarProveedor());
@@ -105,8 +97,33 @@ public class ProveedoresView extends JFrame {
                 seleccionarProveedorDeTabla();
             }
         });
+    }
 
-        setVisible(true);
+    // Métodos auxiliares (consistentes con MetodoPagoView)
+    private JTextField createTextField(boolean enabled) {
+        JTextField field = new JTextField();
+        field.setPreferredSize(new Dimension(250, 25));
+        field.setEnabled(enabled);
+        return field;
+    }
+
+    private void addFormField(JPanel panel, GridBagConstraints gbc, String label, JTextField field, int row) {
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        panel.add(new JLabel(label), gbc);
+        
+        gbc.gridx = 1;
+        panel.add(field, gbc);
+    }
+
+    private void styleTable(JTable table) {
+        table.setRowHeight(25);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+    }
+
+    private void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     private void guardarProveedor() {
@@ -231,6 +248,11 @@ public class ProveedoresView extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new ProveedoresView());
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+        } catch (Exception e) {
+            System.err.println("Error al cargar FlatLaf");
+        }
+        SwingUtilities.invokeLater(() -> new ProveedoresView().setVisible(true));
     }
 }
