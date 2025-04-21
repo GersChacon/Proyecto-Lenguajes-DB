@@ -52,7 +52,7 @@ CREATE TABLE Productos (
     nombre VARCHAR2(255) NOT NULL,
     precio_kg NUMBER(10,2) NOT NULL CHECK (precio_kg >= 0),
     stock_kg NUMBER(10,2) NOT NULL CHECK (stock_kg >= 0),
-    FOREIGN KEY (id_tipo) REFERENCES TipoProducto(id_tipo),
+    FOREIGN KEY (id_tipo) REFERENCES Tipos(id_tipo),
     FOREIGN KEY (id_proveedor) REFERENCES Proveedores(id_proveedor)
 );
 
@@ -661,23 +661,6 @@ END EliminarDetallePago;
 -- 15. FUNCIONES
 -- =============================
 
-CREATE OR REPLACE FUNCTION ObtenerTotalStock RETURN NUMBER IS
-    total_stock NUMBER;
-BEGIN
-    SELECT SUM(stock_kg) INTO total_stock FROM Productos;
-    RETURN total_stock;
-END ObtenerTotalStock;
- 
-
-CREATE OR REPLACE FUNCTION ObtenerTotalPedidosCliente(p_id_cliente IN INT) RETURN NUMBER IS
-    total_pedidos NUMBER;
-BEGIN
-    SELECT COUNT(*) INTO total_pedidos FROM Pedidos WHERE id_cliente = p_id_cliente;
-    RETURN total_pedidos;
-END ObtenerTotalPedidosCliente;
-
--- FUNCIONES PERSONALIZADAS
-
 -- Función 1: Obtener el total de pedidos por cliente
 CREATE OR REPLACE FUNCTION fn_total_pedidos_por_cliente(p_id_cliente IN NUMBER) RETURN NUMBER IS
   v_total NUMBER;
@@ -704,6 +687,21 @@ BEGIN
   RETURN v_count = 0;
 END;
 /
+
+CREATE OR REPLACE FUNCTION ObtenerTotalStock RETURN NUMBER IS
+    total_stock NUMBER;
+BEGIN
+    SELECT SUM(stock_kg) INTO total_stock FROM Productos;
+    RETURN total_stock;
+END ObtenerTotalStock;
+ 
+
+CREATE OR REPLACE FUNCTION ObtenerTotalPedidosCliente(p_id_cliente IN INT) RETURN NUMBER IS
+    total_pedidos NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO total_pedidos FROM Pedidos WHERE id_cliente = p_id_cliente;
+    RETURN total_pedidos;
+END ObtenerTotalPedidosCliente;
 
 -- =============================
 -- 16. VISTAS
@@ -848,47 +846,9 @@ SELECT
 FROM 
     Pedidos;
 
--- VISTAS PERSONALIZADAS
-
--- Vista 1: Vista de productos con su categoría y proveedor
-CREATE OR REPLACE VIEW vista_productos_detalle AS
-SELECT p.id_producto, p.nombre AS producto, c.nombre AS categoria, pr.nombre AS proveedor, p.precio_kg, p.stock_kg
-FROM Productos p
-JOIN TipoProducto tp ON p.id_tipo = tp.id_tipo
-JOIN Categorias c ON tp.id_categoria = c.id_categoria
-JOIN Proveedores pr ON p.id_proveedor = pr.id_proveedor;
-
--- Vista 2: Vista de clientes con su cantidad de pedidos
-CREATE OR REPLACE VIEW vista_clientes_con_pedidos AS
-SELECT c.id_cliente, c.nombre, c.email, COUNT(p.id_pedido) AS total_pedidos
-FROM Clientes c
-LEFT JOIN Pedidos p ON c.id_cliente = p.id_cliente
-GROUP BY c.id_cliente, c.nombre, c.email;
-
 -- =============================
 -- 17. TRIGGERS
 -- =============================
-
-CREATE OR REPLACE TRIGGER ActualizarInventarioDespuesDePedido
-AFTER INSERT ON Detalle_Pedido
-FOR EACH ROW
-BEGIN
-    UPDATE Productos
-    SET stock_kg = stock_kg - :NEW.cantidad_kg
-    WHERE id_producto = :NEW.id_producto;
-END;
- 
-
-CREATE OR REPLACE TRIGGER VerificacionEstadoPago
-BEFORE INSERT ON Pagos
-FOR EACH ROW
-BEGIN
-    IF :NEW.estado_pago IS NULL THEN
-        :NEW.estado_pago := 'pendiente';
-    END IF;
-END;
-
--- TRIGGERS PERSONALIZADOS
 
 -- TRIGGER 1: Evitar eliminar una categoría si tiene productos asignados
 CREATE OR REPLACE TRIGGER trg_no_borrar_categoria_con_productos
@@ -959,6 +919,25 @@ BEGIN
   END IF;
 END;
 /
+
+CREATE OR REPLACE TRIGGER ActualizarInventarioDespuesDePedido
+AFTER INSERT ON Detalle_Pedido
+FOR EACH ROW
+BEGIN
+    UPDATE Productos
+    SET stock_kg = stock_kg - :NEW.cantidad_kg
+    WHERE id_producto = :NEW.id_producto;
+END;
+ 
+
+CREATE OR REPLACE TRIGGER VerificacionEstadoPago
+BEFORE INSERT ON Pagos
+FOR EACH ROW
+BEGIN
+    IF :NEW.estado_pago IS NULL THEN
+        :NEW.estado_pago := 'pendiente';
+    END IF;
+END;
 
 -- =========================================
 -- 18. PROCEDIMIENTOS PARA OBTENER LOS DATOS
@@ -1068,71 +1047,970 @@ BEGIN
 END ObtenerTodosPedidos;
 
 -- =========================================
--- 19. Paquetes
+-- 19. PAQUETES
 -- =========================================
 
--- ========================================
--- PAQUETE CLIENTES
--- ========================================
+-- Bancos
+CREATE OR REPLACE PACKAGE Banco_PKG AS
+    PROCEDURE InsertarBanco(
+        p_nombre IN VARCHAR2,
+        p_direccion IN VARCHAR2,
+        p_telefono IN VARCHAR2,
+        p_email IN VARCHAR2
+    );
 
-CREATE OR REPLACE PACKAGE pkg_clientes AS
-  PROCEDURE crear_cliente(p_nombre IN VARCHAR2, p_direccion IN VARCHAR2, p_telefono IN VARCHAR2, p_email IN VARCHAR2);
-  PROCEDURE actualizar_cliente(p_id IN INT, p_nombre IN VARCHAR2, p_direccion IN VARCHAR2, p_telefono IN VARCHAR2, p_email IN VARCHAR2);
-  PROCEDURE eliminar_cliente(p_id IN INT);
-  FUNCTION obtener_clientes RETURN SYS_REFCURSOR;
-END pkg_clientes;
-/
+    PROCEDURE ActualizarBanco(
+        p_id_banco IN INT,
+        p_nombre IN VARCHAR2,
+        p_direccion IN VARCHAR2,
+        p_telefono IN VARCHAR2,
+        p_email IN VARCHAR2
+    );
 
-CREATE OR REPLACE PACKAGE BODY pkg_clientes AS
+    PROCEDURE EliminarBanco(
+        p_id_banco IN INT
+    );
 
-  PROCEDURE crear_cliente(p_nombre IN VARCHAR2, p_direccion IN VARCHAR2, p_telefono IN VARCHAR2, p_email IN VARCHAR2) IS
-  BEGIN
-    INSERT INTO Clientes(nombre, direccion, telefono, email)
-    VALUES (p_nombre, p_direccion, p_telefono, p_email);
-  END;
+    PROCEDURE ObtenerTodosLosBancos(
+        p_cursor OUT SYS_REFCURSOR
+    );
+END Banco_PKG;
 
-  PROCEDURE actualizar_cliente(p_id IN INT, p_nombre IN VARCHAR2, p_direccion IN VARCHAR2, p_telefono IN VARCHAR2, p_email IN VARCHAR2) IS
-  BEGIN
-    UPDATE Clientes
-    SET nombre = p_nombre, direccion = p_direccion, telefono = p_telefono, email = p_email
-    WHERE id_cliente = p_id;
-  END;
+CREATE OR REPLACE PACKAGE BODY Banco_PKG AS
 
-  PROCEDURE eliminar_cliente(p_id IN INT) IS
-  BEGIN
-    DELETE FROM Clientes WHERE id_cliente = p_id;
-  END;
+    PROCEDURE InsertarBanco(
+        p_nombre IN VARCHAR2,
+        p_direccion IN VARCHAR2,
+        p_telefono IN VARCHAR2,
+        p_email IN VARCHAR2
+    ) AS
+    BEGIN
+        INSERT INTO Bancos (nombre, direccion, telefono, email)
+        VALUES (p_nombre, p_direccion, p_telefono, p_email);
+        COMMIT;
+    END InsertarBanco;
 
-  FUNCTION obtener_clientes RETURN SYS_REFCURSOR IS
-    c_clientes SYS_REFCURSOR;
-  BEGIN
-    OPEN c_clientes FOR SELECT * FROM Clientes;
-    RETURN c_clientes;
-  END;
+    PROCEDURE ActualizarBanco(
+        p_id_banco IN INT,
+        p_nombre IN VARCHAR2,
+        p_direccion IN VARCHAR2,
+        p_telefono IN VARCHAR2,
+        p_email IN VARCHAR2
+    ) AS
+    BEGIN
+        UPDATE Bancos
+        SET 
+            nombre = p_nombre,
+            direccion = p_direccion,
+            telefono = p_telefono,
+            email = p_email
+        WHERE id_banco = p_id_banco;
+        COMMIT;
+    END ActualizarBanco;
 
-END pkg_clientes;
-/
+    PROCEDURE EliminarBanco(
+        p_id_banco IN INT
+    ) AS
+    BEGIN
+        DELETE FROM Bancos 
+        WHERE id_banco = p_id_banco;
+        COMMIT;
+    END EliminarBanco;
 
--- PAQUETES PERSONALIZADOS
+    PROCEDURE ObtenerTodosLosBancos(
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+        SELECT * FROM Vista_Bancos;
+    END ObtenerTodosLosBancos;
 
--- Paquete para productos
-CREATE OR REPLACE PACKAGE pkg_productos AS
-  PROCEDURE actualizar_precio(p_id_producto IN INT, p_nuevo_precio IN NUMBER);
-  FUNCTION obtener_stock(p_id_producto IN INT) RETURN NUMBER;
-END pkg_productos;
-/
+END Banco_PKG;
 
-CREATE OR REPLACE PACKAGE BODY pkg_productos AS
-  PROCEDURE actualizar_precio(p_id_producto IN INT, p_nuevo_precio IN NUMBER) IS
-  BEGIN
-    UPDATE Productos SET precio_kg = p_nuevo_precio WHERE id_producto = p_id_producto;
-  END;
+-- Detalles de Pago
+CREATE OR REPLACE PACKAGE PagoDetalle_PKG AS
+    PROCEDURE InsertarDetallePago(
+        p_id_pago IN INT,
+        p_id_metodo_pago IN INT,
+        p_id_banco IN INT,
+        p_numero_tarjeta IN VARCHAR2,
+        p_nombre_titular IN VARCHAR2,
+        p_fecha_expiracion IN DATE,
+        p_numero_transferencia IN VARCHAR2
+    );
 
-  FUNCTION obtener_stock(p_id_producto IN INT) RETURN NUMBER IS
-    v_stock NUMBER;
-  BEGIN
-    SELECT stock_kg INTO v_stock FROM Productos WHERE id_producto = p_id_producto;
-    RETURN v_stock;
-  END;
-END pkg_productos;
-/
+    PROCEDURE ActualizarDetallePago(
+        p_id_detalle_pago IN INT,
+        p_id_pago IN INT,
+        p_id_metodo_pago IN INT,
+        p_id_banco IN INT,
+        p_numero_tarjeta IN VARCHAR2,
+        p_nombre_titular IN VARCHAR2,
+        p_fecha_expiracion IN DATE,
+        p_numero_transferencia IN VARCHAR2
+    );
+
+    PROCEDURE EliminarDetallePago(
+        p_id_detalle_pago IN INT
+    );
+
+    PROCEDURE ObtenerTodosDetallesPago(
+        p_cursor OUT SYS_REFCURSOR
+    );
+END PagoDetalle_PKG;
+
+CREATE OR REPLACE PACKAGE BODY PagoDetalle_PKG AS
+
+    PROCEDURE InsertarDetallePago(
+        p_id_pago IN INT,
+        p_id_metodo_pago IN INT,
+        p_id_banco IN INT,
+        p_numero_tarjeta IN VARCHAR2,
+        p_nombre_titular IN VARCHAR2,
+        p_fecha_expiracion IN DATE,
+        p_numero_transferencia IN VARCHAR2
+    ) AS
+    BEGIN
+        INSERT INTO Detalles_Pago (
+            id_pago, id_metodo_pago, id_banco, 
+            numero_tarjeta, nombre_titular, 
+            fecha_expiracion, numero_transferencia
+        )
+        VALUES (
+            p_id_pago, p_id_metodo_pago, p_id_banco, 
+            p_numero_tarjeta, p_nombre_titular, 
+            p_fecha_expiracion, p_numero_transferencia
+        );
+        COMMIT;
+    END InsertarDetallePago;
+
+    PROCEDURE ActualizarDetallePago(
+        p_id_detalle_pago IN INT,
+        p_id_pago IN INT,
+        p_id_metodo_pago IN INT,
+        p_id_banco IN INT,
+        p_numero_tarjeta IN VARCHAR2,
+        p_nombre_titular IN VARCHAR2,
+        p_fecha_expiracion IN DATE,
+        p_numero_transferencia IN VARCHAR2
+    ) AS
+    BEGIN
+        UPDATE Detalles_Pago
+        SET 
+            id_pago = p_id_pago,
+            id_metodo_pago = p_id_metodo_pago,
+            id_banco = p_id_banco,
+            numero_tarjeta = p_numero_tarjeta,
+            nombre_titular = p_nombre_titular,
+            fecha_expiracion = p_fecha_expiracion,
+            numero_transferencia = p_numero_transferencia
+        WHERE id_detalle_pago = p_id_detalle_pago;
+        COMMIT;
+    END ActualizarDetallePago;
+
+    PROCEDURE EliminarDetallePago(
+        p_id_detalle_pago IN INT
+    ) AS
+    BEGIN
+        DELETE FROM Detalles_Pago 
+        WHERE id_detalle_pago = p_id_detalle_pago;
+        COMMIT;
+    END EliminarDetallePago;
+
+    PROCEDURE ObtenerTodosDetallesPago(
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+        SELECT * FROM Vista_DetallesPago;
+    END ObtenerTodosDetallesPago;
+
+END PagoDetalle_PKG;
+
+-- Proveedores
+CREATE OR REPLACE PACKAGE Proveedor_PKG AS
+    PROCEDURE InsertarProveedor(
+        p_nombre IN VARCHAR2,
+        p_telefono IN VARCHAR2,
+        p_email IN VARCHAR2,
+        p_direccion IN VARCHAR2
+    );
+
+    PROCEDURE ActualizarProveedor(
+        p_id_proveedor IN INT,
+        p_nombre IN VARCHAR2,
+        p_telefono IN VARCHAR2,
+        p_email IN VARCHAR2,
+        p_direccion IN VARCHAR2
+    );
+
+    PROCEDURE EliminarProveedor(
+        p_id_proveedor IN INT
+    );
+
+    PROCEDURE ObtenerTodosProveedores(
+        p_cursor OUT SYS_REFCURSOR
+    );
+END Proveedor_PKG;
+
+CREATE OR REPLACE PACKAGE BODY Proveedor_PKG AS
+
+    PROCEDURE InsertarProveedor(
+        p_nombre IN VARCHAR2,
+        p_telefono IN VARCHAR2,
+        p_email IN VARCHAR2,
+        p_direccion IN VARCHAR2
+    ) AS
+    BEGIN
+        INSERT INTO Proveedores (nombre, telefono, email, direccion)
+        VALUES (p_nombre, p_telefono, p_email, p_direccion);
+        COMMIT;
+    END InsertarProveedor;
+
+    PROCEDURE ActualizarProveedor(
+        p_id_proveedor IN INT,
+        p_nombre IN VARCHAR2,
+        p_telefono IN VARCHAR2,
+        p_email IN VARCHAR2,
+        p_direccion IN VARCHAR2
+    ) AS
+    BEGIN
+        UPDATE Proveedores
+        SET 
+            nombre = p_nombre,
+            telefono = p_telefono,
+            email = p_email,
+            direccion = p_direccion
+        WHERE id_proveedor = p_id_proveedor;
+        COMMIT;
+    END ActualizarProveedor;
+
+    PROCEDURE EliminarProveedor(
+        p_id_proveedor IN INT
+    ) AS
+    BEGIN
+        DELETE FROM Proveedores 
+        WHERE id_proveedor = p_id_proveedor;
+        COMMIT;
+    END EliminarProveedor;
+
+    PROCEDURE ObtenerTodosProveedores(
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+        SELECT * FROM Vista_Proveedores;
+    END ObtenerTodosProveedores;
+
+END Proveedor_PKG;
+
+-- Clientes
+CREATE OR REPLACE PACKAGE Cliente_PKG AS
+    PROCEDURE InsertarCliente(
+        p_nombre IN VARCHAR2,
+        p_direccion IN VARCHAR2,
+        p_telefono IN VARCHAR2,
+        p_email IN VARCHAR2
+    );
+
+    PROCEDURE ActualizarCliente(
+        p_id_cliente IN INT,
+        p_nombre IN VARCHAR2,
+        p_direccion IN VARCHAR2,
+        p_telefono IN VARCHAR2,
+        p_email IN VARCHAR2
+    );
+
+    PROCEDURE EliminarCliente(
+        p_id_cliente IN INT
+    );
+
+    PROCEDURE ObtenerTodosLosClientes(
+        p_cursor OUT SYS_REFCURSOR
+    );
+END Cliente_PKG;
+
+CREATE OR REPLACE PACKAGE BODY Cliente_PKG AS
+
+    PROCEDURE InsertarCliente(
+        p_nombre IN VARCHAR2,
+        p_direccion IN VARCHAR2,
+        p_telefono IN VARCHAR2,
+        p_email IN VARCHAR2
+    ) AS
+    BEGIN
+        INSERT INTO Clientes (nombre, direccion, telefono, email)
+        VALUES (p_nombre, p_direccion, p_telefono, p_email);
+        COMMIT;
+    END InsertarCliente;
+
+    PROCEDURE ActualizarCliente(
+        p_id_cliente IN INT,
+        p_nombre IN VARCHAR2,
+        p_direccion IN VARCHAR2,
+        p_telefono IN VARCHAR2,
+        p_email IN VARCHAR2
+    ) AS
+    BEGIN
+        UPDATE Clientes
+        SET 
+            nombre = p_nombre,
+            direccion = p_direccion,
+            telefono = p_telefono,
+            email = p_email
+        WHERE id_cliente = p_id_cliente;
+        COMMIT;
+    END ActualizarCliente;
+
+    PROCEDURE EliminarCliente(
+        p_id_cliente IN INT
+    ) AS
+    BEGIN
+        DELETE FROM Clientes 
+        WHERE id_cliente = p_id_cliente;
+        COMMIT;
+    END EliminarCliente;
+
+    PROCEDURE ObtenerTodosLosClientes(
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+        SELECT * FROM Vista_Clientes;
+    END ObtenerTodosLosClientes;
+
+END Cliente_PKG;
+
+-- Categorias
+CREATE OR REPLACE PACKAGE Categoria_PKG AS
+    PROCEDURE InsertarCategoria(
+        p_nombre IN VARCHAR2
+    );
+
+    PROCEDURE ActualizarCategoria(
+        p_id_categoria IN INT,
+        p_nombre IN VARCHAR2
+    );
+
+    PROCEDURE EliminarCategoria(
+        p_id_categoria IN INT
+    );
+
+    PROCEDURE ObtenerTodasLasCategorias(
+        p_resultado OUT SYS_REFCURSOR
+    );
+END Categoria_PKG;
+
+CREATE OR REPLACE PACKAGE BODY Categoria_PKG AS
+
+    PROCEDURE InsertarCategoria(
+        p_nombre IN VARCHAR2
+    ) AS
+    BEGIN
+        INSERT INTO Categorias (nombre)
+        VALUES (p_nombre);
+        COMMIT;
+    END InsertarCategoria;
+
+    PROCEDURE ActualizarCategoria(
+        p_id_categoria IN INT,
+        p_nombre IN VARCHAR2
+    ) AS
+    BEGIN
+        UPDATE Categorias
+        SET nombre = p_nombre
+        WHERE id_categoria = p_id_categoria;
+        COMMIT;
+    END ActualizarCategoria;
+
+    PROCEDURE EliminarCategoria(
+        p_id_categoria IN INT
+    ) AS
+    BEGIN
+        DELETE FROM Categorias 
+        WHERE id_categoria = p_id_categoria;
+        COMMIT;
+    END EliminarCategoria;
+
+    PROCEDURE ObtenerTodasLasCategorias(
+        p_resultado OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_resultado FOR
+        SELECT * FROM Vista_Categorias;
+    END ObtenerTodasLasCategorias;
+
+END Categoria_PKG;
+
+-- Tipos de Producto
+CREATE OR REPLACE PACKAGE TipoProducto_PKG AS
+    PROCEDURE InsertarTipoProducto(
+        p_id_categoria IN INT,
+        p_nombre IN VARCHAR2
+    );
+
+    PROCEDURE ActualizarTipoProducto(
+        p_id_tipo IN INT,
+        p_id_categoria IN INT,
+        p_nombre IN VARCHAR2
+    );
+
+    PROCEDURE EliminarTipoProducto(
+        p_id_tipo IN INT
+    );
+
+    PROCEDURE ObtenerTodosTiposProducto(
+        p_cursor OUT SYS_REFCURSOR
+    );
+END TipoProducto_PKG;
+
+CREATE OR REPLACE PACKAGE BODY TipoProducto_PKG AS
+
+    PROCEDURE InsertarTipoProducto(
+        p_id_categoria IN INT,
+        p_nombre IN VARCHAR2
+    ) AS
+    BEGIN
+        INSERT INTO TipoProducto (id_categoria, nombre)
+        VALUES (p_id_categoria, p_nombre);
+        COMMIT;
+    END InsertarTipoProducto;
+
+    PROCEDURE ActualizarTipoProducto(
+        p_id_tipo IN INT,
+        p_id_categoria IN INT,
+        p_nombre IN VARCHAR2
+    ) AS
+    BEGIN
+        UPDATE TipoProducto
+        SET 
+            id_categoria = p_id_categoria,
+            nombre = p_nombre
+        WHERE id_tipo = p_id_tipo;
+        COMMIT;
+    END ActualizarTipoProducto;
+
+    PROCEDURE EliminarTipoProducto(
+        p_id_tipo IN INT
+    ) AS
+    BEGIN
+        DELETE FROM TipoProducto 
+        WHERE id_tipo = p_id_tipo;
+        COMMIT;
+    END EliminarTipoProducto;
+
+    PROCEDURE ObtenerTodosTiposProducto(
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+        SELECT * FROM Vista_TiposProducto;
+    END ObtenerTodosTiposProducto;
+
+END TipoProducto_PKG;
+
+-- Productos
+CREATE OR REPLACE PACKAGE Producto_PKG AS
+    PROCEDURE InsertarProducto(
+        p_id_tipo IN INT,
+        p_id_proveedor IN INT,
+        p_nombre IN VARCHAR2,
+        p_precio_kg IN NUMBER,
+        p_stock_kg IN NUMBER
+    );
+
+    PROCEDURE ActualizarProducto(
+        p_id_producto IN INT,
+        p_id_tipo IN INT,
+        p_id_proveedor IN INT,
+        p_nombre IN VARCHAR2,
+        p_precio_kg IN NUMBER,
+        p_stock_kg IN NUMBER
+    );
+
+    PROCEDURE EliminarProducto(
+        p_id_producto IN INT
+    );
+
+    PROCEDURE ObtenerTodosProductos(
+        p_cursor OUT SYS_REFCURSOR
+    );
+END Producto_PKG;
+
+CREATE OR REPLACE PACKAGE BODY Producto_PKG AS
+
+    PROCEDURE InsertarProducto(
+        p_id_tipo IN INT,
+        p_id_proveedor IN INT,
+        p_nombre IN VARCHAR2,
+        p_precio_kg IN NUMBER,
+        p_stock_kg IN NUMBER
+    ) AS
+    BEGIN
+        INSERT INTO Productos (id_tipo, id_proveedor, nombre, precio_kg, stock_kg)
+        VALUES (p_id_tipo, p_id_proveedor, p_nombre, p_precio_kg, p_stock_kg);
+        COMMIT;
+    END InsertarProducto;
+
+    PROCEDURE ActualizarProducto(
+        p_id_producto IN INT,
+        p_id_tipo IN INT,
+        p_id_proveedor IN INT,
+        p_nombre IN VARCHAR2,
+        p_precio_kg IN NUMBER,
+        p_stock_kg IN NUMBER
+    ) AS
+    BEGIN
+        UPDATE Productos
+        SET id_tipo = p_id_tipo,
+            id_proveedor = p_id_proveedor,
+            nombre = p_nombre,
+            precio_kg = p_precio_kg,
+            stock_kg = p_stock_kg
+        WHERE id_producto = p_id_producto;
+        COMMIT;
+    END ActualizarProducto;
+
+    PROCEDURE EliminarProducto(
+        p_id_producto IN INT
+    ) AS
+    BEGIN
+        DELETE FROM Productos 
+        WHERE id_producto = p_id_producto;
+        COMMIT;
+    END EliminarProducto;
+
+    PROCEDURE ObtenerTodosProductos(
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+        SELECT * FROM Vista_Productos;
+    END ObtenerTodosProductos;
+
+END Producto_PKG;
+
+-- Estados del Pedido
+CREATE OR REPLACE PACKAGE EstadoPedido_PKG AS
+    PROCEDURE InsertarEstadoPedido(
+        p_nombre IN VARCHAR2
+    );
+
+    PROCEDURE ActualizarEstadoPedido(
+        p_id_estado IN INT,
+        p_nombre IN VARCHAR2
+    );
+
+    PROCEDURE EliminarEstadoPedido(
+        p_id_estado IN INT
+    );
+
+    PROCEDURE ObtenerEstadosPedido(
+        p_cursor OUT SYS_REFCURSOR
+    );
+END EstadoPedido_PKG;
+
+CREATE OR REPLACE PACKAGE BODY EstadoPedido_PKG AS
+
+    PROCEDURE InsertarEstadoPedido(
+        p_nombre IN VARCHAR2
+    ) AS
+    BEGIN
+        INSERT INTO Estados_Pedido (nombre)
+        VALUES (p_nombre);
+        COMMIT;
+    END InsertarEstadoPedido;
+
+    PROCEDURE ActualizarEstadoPedido(
+        p_id_estado IN INT,
+        p_nombre IN VARCHAR2
+    ) AS
+    BEGIN
+        UPDATE Estados_Pedido
+        SET nombre = p_nombre
+        WHERE id_estado = p_id_estado;
+        COMMIT;
+    END ActualizarEstadoPedido;
+
+    PROCEDURE EliminarEstadoPedido(
+        p_id_estado IN INT
+    ) AS
+    BEGIN
+        DELETE FROM Estados_Pedido WHERE id_estado = p_id_estado;
+        COMMIT;
+    END EliminarEstadoPedido;
+
+    PROCEDURE ObtenerEstadosPedido(
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+        SELECT * FROM Vista_EstadosPedido;
+    END ObtenerEstadosPedido;
+
+END EstadoPedido_PKG;
+
+-- Pedidos
+CREATE OR REPLACE PACKAGE Pedido_PKG AS
+    PROCEDURE InsertarPedido(
+        p_id_cliente IN INT,
+        p_id_estado IN INT,
+        p_fecha_pedido IN DATE DEFAULT SYSDATE,
+        p_monto_pagado IN NUMBER DEFAULT 0
+    );
+
+    PROCEDURE ActualizarPedido(
+        p_id_pedido IN INT,
+        p_id_cliente IN INT,
+        p_id_estado IN INT,
+        p_fecha_pedido IN DATE,
+        p_monto_pagado IN NUMBER
+    );
+
+    PROCEDURE EliminarPedido(
+        p_id_pedido IN INT
+    );
+
+    PROCEDURE ObtenerTodosPedidos(
+        p_cursor OUT SYS_REFCURSOR
+    );
+END Pedido_PKG;
+
+CREATE OR REPLACE PACKAGE BODY Pedido_PKG AS
+
+    PROCEDURE InsertarPedido(
+        p_id_cliente IN INT,
+        p_id_estado IN INT,
+        p_fecha_pedido IN DATE DEFAULT SYSDATE,
+        p_monto_pagado IN NUMBER DEFAULT 0
+    ) AS
+    BEGIN
+        INSERT INTO Pedidos (id_cliente, id_estado, fecha_pedido, monto_pagado)
+        VALUES (p_id_cliente, p_id_estado, p_fecha_pedido, p_monto_pagado);
+        COMMIT;
+    END InsertarPedido;
+
+    PROCEDURE ActualizarPedido(
+        p_id_pedido IN INT,
+        p_id_cliente IN INT,
+        p_id_estado IN INT,
+        p_fecha_pedido IN DATE,
+        p_monto_pagado IN NUMBER
+    ) AS
+    BEGIN
+        UPDATE Pedidos
+        SET id_cliente = p_id_cliente,
+            id_estado = p_id_estado,
+            fecha_pedido = p_fecha_pedido,
+            monto_pagado = p_monto_pagado
+        WHERE id_pedido = p_id_pedido;
+        COMMIT;
+    END ActualizarPedido;
+
+    PROCEDURE EliminarPedido(
+        p_id_pedido IN INT
+    ) AS
+    BEGIN
+        DELETE FROM Pedidos WHERE id_pedido = p_id_pedido;
+        COMMIT;
+    END EliminarPedido;
+
+    PROCEDURE ObtenerTodosPedidos(
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+        SELECT * FROM Vista_Pedidos;
+    END ObtenerTodosPedidos;
+
+END Pedido_PKG;
+
+-- Detalles del Pedido
+CREATE OR REPLACE PACKAGE DetallePedido_PKG AS
+    PROCEDURE InsertarDetallePedido(
+        p_id_pedido IN INT,
+        p_id_producto IN INT,
+        p_cantidad_kg IN NUMBER,
+        p_precio_unitario IN NUMBER
+    );
+
+    PROCEDURE ActualizarDetallePedido(
+        p_id_detalle IN INT,
+        p_id_pedido IN INT,
+        p_id_producto IN INT,
+        p_cantidad_kg IN NUMBER,
+        p_precio_unitario IN NUMBER
+    );
+
+    PROCEDURE EliminarDetallePedido(
+        p_id_detalle IN INT
+    );
+
+    PROCEDURE ObtenerTodosDetallesPedido(
+        p_cursor OUT SYS_REFCURSOR
+    );
+END DetallePedido_PKG;
+
+CREATE OR REPLACE PACKAGE BODY DetallePedido_PKG AS
+
+    PROCEDURE InsertarDetallePedido(
+        p_id_pedido IN INT,
+        p_id_producto IN INT,
+        p_cantidad_kg IN NUMBER,
+        p_precio_unitario IN NUMBER
+    ) AS
+    BEGIN
+        INSERT INTO Detalle_Pedido (id_pedido, id_producto, cantidad_kg, precio_unitario)
+        VALUES (p_id_pedido, p_id_producto, p_cantidad_kg, p_precio_unitario);
+        COMMIT;
+    END InsertarDetallePedido;
+
+    PROCEDURE ActualizarDetallePedido(
+        p_id_detalle IN INT,
+        p_id_pedido IN INT,
+        p_id_producto IN INT,
+        p_cantidad_kg IN NUMBER,
+        p_precio_unitario IN NUMBER
+    ) AS
+    BEGIN
+        UPDATE Detalle_Pedido
+        SET id_pedido = p_id_pedido,
+            id_producto = p_id_producto,
+            cantidad_kg = p_cantidad_kg,
+            precio_unitario = p_precio_unitario
+        WHERE id_detalle = p_id_detalle;
+        COMMIT;
+    END ActualizarDetallePedido;
+
+    PROCEDURE EliminarDetallePedido(
+        p_id_detalle IN INT
+    ) AS
+    BEGIN
+        DELETE FROM Detalle_Pedido WHERE id_detalle = p_id_detalle;
+        COMMIT;
+    END EliminarDetallePedido;
+
+    PROCEDURE ObtenerTodosDetallesPedido(
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+        SELECT * FROM Vista_DetallesPedido;
+    END ObtenerTodosDetallesPedido;
+
+END DetallePedido_PKG;
+
+-- Inventario
+CREATE OR REPLACE PACKAGE Inventario_PKG AS
+    PROCEDURE InsertarInventario(
+        p_id_producto IN INT,
+        p_tipo_movimiento IN VARCHAR2,
+        p_cantidad_kg IN NUMBER,
+        p_fecha_movimiento IN DATE DEFAULT SYSDATE,
+        p_id_detalle_pedido IN INT DEFAULT NULL
+    );
+
+    PROCEDURE ActualizarInventario(
+        p_id_movimiento IN INT,
+        p_id_producto IN INT,
+        p_tipo_movimiento IN VARCHAR2,
+        p_cantidad_kg IN NUMBER,
+        p_fecha_movimiento IN DATE,
+        p_id_detalle_pedido IN INT
+    );
+
+    PROCEDURE EliminarInventario(
+        p_id_movimiento IN INT
+    );
+
+    PROCEDURE ObtenerTodosMovimientosInventario(
+        p_cursor OUT SYS_REFCURSOR
+    );
+END Inventario_PKG;
+
+CREATE OR REPLACE PACKAGE BODY Inventario_PKG AS
+
+    PROCEDURE InsertarInventario(
+        p_id_producto IN INT,
+        p_tipo_movimiento IN VARCHAR2,
+        p_cantidad_kg IN NUMBER,
+        p_fecha_movimiento IN DATE DEFAULT SYSDATE,
+        p_id_detalle_pedido IN INT DEFAULT NULL
+    ) AS
+    BEGIN
+        INSERT INTO Inventario (id_producto, tipo_movimiento, cantidad_kg, fecha_movimiento, id_detalle_pedido)
+        VALUES (p_id_producto, p_tipo_movimiento, p_cantidad_kg, p_fecha_movimiento, p_id_detalle_pedido);
+        COMMIT;
+    END InsertarInventario;
+
+    PROCEDURE ActualizarInventario(
+        p_id_movimiento IN INT,
+        p_id_producto IN INT,
+        p_tipo_movimiento IN VARCHAR2,
+        p_cantidad_kg IN NUMBER,
+        p_fecha_movimiento IN DATE,
+        p_id_detalle_pedido IN INT
+    ) AS
+    BEGIN
+        UPDATE Inventario
+        SET id_producto = p_id_producto,
+            tipo_movimiento = p_tipo_movimiento,
+            cantidad_kg = p_cantidad_kg,
+            fecha_movimiento = p_fecha_movimiento,
+            id_detalle_pedido = p_id_detalle_pedido
+        WHERE id_movimiento = p_id_movimiento;
+        COMMIT;
+    END ActualizarInventario;
+
+    PROCEDURE EliminarInventario(
+        p_id_movimiento IN INT
+    ) AS
+    BEGIN
+        DELETE FROM Inventario WHERE id_movimiento = p_id_movimiento;
+        COMMIT;
+    END EliminarInventario;
+
+    PROCEDURE ObtenerTodosMovimientosInventario(
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+        SELECT * FROM Vista_MovimientosInventario;
+    END ObtenerTodosMovimientosInventario;
+
+END Inventario_PKG;
+
+-- Metodos de Pago
+CREATE OR REPLACE PACKAGE MetodosPago_PKG AS
+    PROCEDURE InsertarMetodoPago(
+        p_nombre IN VARCHAR2
+    );
+
+    PROCEDURE ActualizarMetodoPago(
+        p_id_metodo_pago IN INT,
+        p_nombre IN VARCHAR2
+    );
+
+    PROCEDURE EliminarMetodoPago(
+        p_id_metodo_pago IN INT
+    );
+
+    PROCEDURE ObtenerTodosMetodosPago(
+        p_cursor OUT SYS_REFCURSOR
+    );
+END MetodosPago_PKG;
+
+CREATE OR REPLACE PACKAGE BODY MetodosPago_PKG AS
+
+    PROCEDURE InsertarMetodoPago(
+        p_nombre IN VARCHAR2
+    ) AS
+    BEGIN
+        INSERT INTO Metodos_Pago (nombre)
+        VALUES (p_nombre);
+        COMMIT;
+    END InsertarMetodoPago;
+
+    PROCEDURE ActualizarMetodoPago(
+        p_id_metodo_pago IN INT,
+        p_nombre IN VARCHAR2
+    ) AS
+    BEGIN
+        UPDATE Metodos_Pago
+        SET nombre = p_nombre
+        WHERE id_metodo_pago = p_id_metodo_pago;
+        COMMIT;
+    END ActualizarMetodoPago;
+
+    PROCEDURE EliminarMetodoPago(
+        p_id_metodo_pago IN INT
+    ) AS
+    BEGIN
+        DELETE FROM Metodos_Pago WHERE id_metodo_pago = p_id_metodo_pago;
+        COMMIT;
+    END EliminarMetodoPago;
+
+    PROCEDURE ObtenerTodosMetodosPago(
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+        SELECT * FROM Vista_MetodosPago;
+    END ObtenerTodosMetodosPago;
+
+END MetodosPago_PKG;
+
+-- Pagos
+CREATE OR REPLACE PACKAGE Pagos_PKG AS
+    PROCEDURE InsertarPago(
+        p_id_pedido IN NUMBER,
+        p_monto IN NUMBER,
+        p_fecha_pago IN DATE DEFAULT SYSDATE,
+        p_estado_pago IN VARCHAR2 DEFAULT 'pendiente'
+    );
+
+    PROCEDURE ActualizarPago(
+        p_id_pago IN NUMBER,
+        p_id_pedido IN NUMBER,
+        p_monto IN NUMBER,
+        p_fecha_pago IN DATE,
+        p_estado_pago IN VARCHAR2
+    );
+
+    PROCEDURE EliminarPago(
+        p_id_pago IN NUMBER
+    );
+
+    PROCEDURE ObtenerTodosPagos(
+        p_cursor OUT SYS_REFCURSOR
+    );
+END Pagos_PKG;
+
+CREATE OR REPLACE PACKAGE BODY Pagos_PKG AS
+
+    PROCEDURE InsertarPago(
+        p_id_pedido IN NUMBER,
+        p_monto IN NUMBER,
+        p_fecha_pago IN DATE DEFAULT SYSDATE,
+        p_estado_pago IN VARCHAR2 DEFAULT 'pendiente'
+    ) AS
+    BEGIN
+        INSERT INTO Pagos (id_pedido, monto, fecha_pago, estado_pago)
+        VALUES (p_id_pedido, p_monto, p_fecha_pago, p_estado_pago);
+        COMMIT;
+    END InsertarPago;
+
+    PROCEDURE ActualizarPago(
+        p_id_pago IN NUMBER,
+        p_id_pedido IN NUMBER,
+        p_monto IN NUMBER,
+        p_fecha_pago IN DATE,
+        p_estado_pago IN VARCHAR2
+    ) AS
+    BEGIN
+        UPDATE Pagos
+        SET id_pedido = p_id_pedido,
+            monto = p_monto,
+            fecha_pago = p_fecha_pago,
+            estado_pago = p_estado_pago
+        WHERE id_pago = p_id_pago;
+        COMMIT;
+    END ActualizarPago;
+
+    PROCEDURE EliminarPago(
+        p_id_pago IN NUMBER
+    ) AS
+    BEGIN
+        DELETE FROM Pagos WHERE id_pago = p_id_pago;
+        COMMIT;
+    END EliminarPago;
+
+    PROCEDURE ObtenerTodosPagos(
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+        SELECT * FROM Vista_Pagos;
+    END ObtenerTodosPagos;
+
+END Pagos_PKG;
