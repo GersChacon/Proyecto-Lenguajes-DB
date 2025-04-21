@@ -2,8 +2,6 @@ package VIEW;
 
 import CONTROLLER.DetallePagoController;
 import MODEL.DetallePago;
-import com.formdev.flatlaf.FlatDarkLaf;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -12,7 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-public class DetallePagoView extends JFrame {
+public class DetallePagoView extends JPanel {
 
     private JTextField txtId, txtPago, txtBanco, txtNumeroTarjeta, txtNombreTitular, txtNumeroTransferencia;
     private JComboBox<String> cmbMetodoPago;
@@ -20,11 +18,11 @@ public class DetallePagoView extends JFrame {
     private JButton btnGuardar, btnActualizar, btnEliminar;
     private JTable tabla;
     private DefaultTableModel modeloTabla;
-    private DetallePagoController controller;
+    private final DetallePagoController controller;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
-    public DetallePagoView() {
-        controller = new DetallePagoController();
+    public DetallePagoView(DetallePagoController controller) {
+        this.controller = controller;
         initComponents();
         setupListeners();
         cargarMetodosPago();
@@ -32,15 +30,9 @@ public class DetallePagoView extends JFrame {
     }
 
     private void initComponents() {
-        setTitle("Gestión de Detalles de Pago");
-        setSize(900, 600);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
-        // Panel formulario
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBorder(BorderFactory.createTitledBorder("Datos del Detalle de Pago"));
         GridBagConstraints gbc = new GridBagConstraints();
@@ -50,11 +42,11 @@ public class DetallePagoView extends JFrame {
 
         addFormField(formPanel, gbc, "ID:", txtId = createTextField(false), 0);
         addFormField(formPanel, gbc, "ID Pago:", txtPago = createTextField(true), 1);
-        
+
         gbc.gridy = 2;
         gbc.gridx = 0;
         formPanel.add(new JLabel("Método Pago:"), gbc);
-        
+
         gbc.gridx = 1;
         cmbMetodoPago = new JComboBox<>();
         cmbMetodoPago.setPreferredSize(new Dimension(200, 25));
@@ -63,11 +55,11 @@ public class DetallePagoView extends JFrame {
         addFormField(formPanel, gbc, "ID Banco:", txtBanco = createTextField(true), 3);
         addFormField(formPanel, gbc, "Número Tarjeta:", txtNumeroTarjeta = createTextField(true), 4);
         addFormField(formPanel, gbc, "Nombre Titular:", txtNombreTitular = createTextField(true), 5);
-        
+
         gbc.gridy = 6;
         gbc.gridx = 0;
         formPanel.add(new JLabel("Fecha Expiración:"), gbc);
-        
+
         gbc.gridx = 1;
         txtFechaExpiracion = new JFormattedTextField(dateFormat);
         txtFechaExpiracion.setPreferredSize(new Dimension(200, 25));
@@ -75,7 +67,6 @@ public class DetallePagoView extends JFrame {
 
         addFormField(formPanel, gbc, "Número Transferencia:", txtNumeroTransferencia = createTextField(true), 7);
 
-        // Botones
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         btnGuardar = new JButton("Guardar");
         btnActualizar = new JButton("Actualizar");
@@ -88,30 +79,28 @@ public class DetallePagoView extends JFrame {
         topPanel.add(formPanel, BorderLayout.CENTER);
         topPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        // Tabla
         modeloTabla = new DefaultTableModel(
-            new String[]{"ID", "ID Pago", "Método", "Banco", "Tarjeta", "Titular", "Expiración", "Transferencia"}, 0) {
+                new String[]{"ID", "ID Pago", "Método", "Banco", "Tarjeta", "Titular", "Expiración", "Transferencia"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-        
+
         tabla = new JTable(modeloTabla);
         tabla.setRowHeight(25);
         JScrollPane scroll = new JScrollPane(tabla);
         scroll.setBorder(BorderFactory.createTitledBorder("Detalles de Pago Registrados"));
 
-        mainPanel.add(topPanel, BorderLayout.NORTH);
-        mainPanel.add(scroll, BorderLayout.CENTER);
-        add(mainPanel);
+        add(topPanel, BorderLayout.NORTH);
+        add(scroll, BorderLayout.CENTER);
     }
 
     private void setupListeners() {
         btnGuardar.addActionListener(e -> guardarDetallePago());
         btnActualizar.addActionListener(e -> actualizarDetallePago());
         btnEliminar.addActionListener(e -> eliminarDetallePago());
-        
+
         tabla.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -137,15 +126,15 @@ public class DetallePagoView extends JFrame {
                 mostrarError("El campo 'Nombre Titular' no puede estar vacío.");
                 return;
             }
-            
+
             controller.insertarDetallePago(
-                Integer.parseInt(txtPago.getText()),
-                cmbMetodoPago.getSelectedIndex() + 1,
-                txtBanco.getText().isEmpty() ? null : Integer.parseInt(txtBanco.getText()),
-                txtNumeroTarjeta.getText(),
-                nombreTitular,
-                txtFechaExpiracion.getText().isEmpty() ? null : dateFormat.parse(txtFechaExpiracion.getText()),
-                txtNumeroTransferencia.getText()
+                    Integer.parseInt(txtPago.getText()),
+                    cmbMetodoPago.getSelectedIndex() + 1,
+                    txtBanco.getText().isEmpty() ? null : Integer.parseInt(txtBanco.getText()),
+                    txtNumeroTarjeta.getText(),
+                    nombreTitular,
+                    txtFechaExpiracion.getText().isEmpty() ? null : dateFormat.parse(txtFechaExpiracion.getText()),
+                    txtNumeroTransferencia.getText()
             );
             limpiarCampos();
             cargarDetallesPago();
@@ -162,16 +151,16 @@ public class DetallePagoView extends JFrame {
                     mostrarError("El campo 'Nombre Titular' no puede estar vacío.");
                     return;
                 }
-                
+
                 controller.actualizarDetallePago(
-                    Integer.parseInt(txtId.getText()),
-                    Integer.parseInt(txtPago.getText()),
-                    cmbMetodoPago.getSelectedIndex() + 1,
-                    txtBanco.getText().isEmpty() ? null : Integer.parseInt(txtBanco.getText()),
-                    txtNumeroTarjeta.getText(),
-                    nombreTitular,
-                    txtFechaExpiracion.getText().isEmpty() ? null : dateFormat.parse(txtFechaExpiracion.getText()),
-                    txtNumeroTransferencia.getText()
+                        Integer.parseInt(txtId.getText()),
+                        Integer.parseInt(txtPago.getText()),
+                        cmbMetodoPago.getSelectedIndex() + 1,
+                        txtBanco.getText().isEmpty() ? null : Integer.parseInt(txtBanco.getText()),
+                        txtNumeroTarjeta.getText(),
+                        nombreTitular,
+                        txtFechaExpiracion.getText().isEmpty() ? null : dateFormat.parse(txtFechaExpiracion.getText()),
+                        txtNumeroTransferencia.getText()
                 );
                 limpiarCampos();
                 cargarDetallesPago();
@@ -186,12 +175,12 @@ public class DetallePagoView extends JFrame {
     private void eliminarDetallePago() {
         if (!txtId.getText().isEmpty()) {
             int confirm = JOptionPane.showConfirmDialog(
-                this, 
-                "¿Estás seguro de eliminar este detalle de pago?", 
-                "Confirmar Eliminación", 
-                JOptionPane.YES_NO_OPTION
+                    this,
+                    "¿Estás seguro de eliminar este detalle de pago?",
+                    "Confirmar Eliminación",
+                    JOptionPane.YES_NO_OPTION
             );
-            
+
             if (confirm == JOptionPane.YES_OPTION) {
                 controller.eliminarDetallePago(Integer.parseInt(txtId.getText()));
                 limpiarCampos();
@@ -215,8 +204,8 @@ public class DetallePagoView extends JFrame {
             modeloTabla.addRow(new Object[]{
                 detalle.getIdDetallePago(),
                 detalle.getIdPago(),
-                detalle.getIdMetodoPago() == 1 ? "Efectivo" : 
-                    detalle.getIdMetodoPago() == 2 ? "Tarjeta" : "Transferencia",
+                detalle.getIdMetodoPago() == 1 ? "Efectivo"
+                : detalle.getIdMetodoPago() == 2 ? "Tarjeta" : "Transferencia",
                 detalle.getIdBanco(),
                 detalle.getNumeroTarjeta(),
                 detalle.getNombreTitular(),
@@ -254,14 +243,5 @@ public class DetallePagoView extends JFrame {
 
     private void mostrarError(String mensaje) {
         JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
-    }
-
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(new FlatDarkLaf());
-        } catch (Exception e) {
-            System.err.println("No se pudo aplicar FlatLaf.");
-        }
-        SwingUtilities.invokeLater(() -> new DetallePagoView().setVisible(true));
     }
 }

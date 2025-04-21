@@ -2,39 +2,30 @@ package VIEW;
 
 import CONTROLLER.BancosController;
 import MODEL.Bancos;
-import com.formdev.flatlaf.FlatDarkLaf;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
-public class BancosView extends JFrame {
-
+public class BancosView extends JPanel {
     private JTextField txtId, txtNombre, txtDireccion, txtTelefono, txtEmail;
     private JButton btnGuardar, btnActualizar, btnEliminar;
     private JTable tabla;
     private DefaultTableModel modeloTabla;
-    private BancosController controller;
+    private final BancosController controller;
 
-    public BancosView() {
-        controller = new BancosController();
+    public BancosView(BancosController controller) {
+        this.controller = controller;
         initComponents();
         setupListeners();
         cargarBancos();
     }
 
     private void initComponents() {
-        setTitle("Gestión de Bancos");
-        setSize(900, 650);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // Panel principal con márgenes
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
-        // Panel de formulario
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBorder(BorderFactory.createTitledBorder("Datos del Banco"));
         
@@ -42,14 +33,12 @@ public class BancosView extends JFrame {
         gbc.insets = new Insets(8, 8, 8, 8);
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Campos del formulario
         addFormField(formPanel, gbc, "ID:", txtId = createTextField(false), 0);
         addFormField(formPanel, gbc, "Nombre:", txtNombre = createTextField(true), 1);
         addFormField(formPanel, gbc, "Dirección:", txtDireccion = createTextField(true), 2);
         addFormField(formPanel, gbc, "Teléfono:", txtTelefono = createTextField(true), 3);
         addFormField(formPanel, gbc, "Email:", txtEmail = createTextField(true), 4);
 
-        // Panel de botones
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         btnGuardar = new JButton("Guardar");
         btnActualizar = new JButton("Actualizar");
@@ -58,12 +47,10 @@ public class BancosView extends JFrame {
         buttonPanel.add(btnActualizar);
         buttonPanel.add(btnEliminar);
 
-        // Panel superior (formulario + botones)
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(formPanel, BorderLayout.CENTER);
         topPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        // Configuración de la tabla
         modeloTabla = new DefaultTableModel(
             new String[]{"ID", "Nombre", "Dirección", "Teléfono", "Email"}, 0) {
             @Override
@@ -78,10 +65,8 @@ public class BancosView extends JFrame {
         JScrollPane scroll = new JScrollPane(tabla);
         scroll.setBorder(BorderFactory.createTitledBorder("Lista de Bancos Registrados"));
 
-        // Ensamblar la interfaz
-        mainPanel.add(topPanel, BorderLayout.NORTH);
-        mainPanel.add(scroll, BorderLayout.CENTER);
-        add(mainPanel);
+        add(topPanel, BorderLayout.NORTH);
+        add(scroll, BorderLayout.CENTER);
     }
 
     private void setupListeners() {
@@ -163,7 +148,7 @@ public class BancosView extends JFrame {
         modeloTabla.setRowCount(0);
         List<Bancos> lista = controller.obtenerTodosLosBancos();
         for (Bancos banco : lista) {
-            modeloTabla.addRow(new Object[]{
+            modeloTabla.addRow(new Object[] {
                 banco.getIdBancos(),
                 banco.getNombre(),
                 banco.getDireccion(),
@@ -173,7 +158,6 @@ public class BancosView extends JFrame {
         }
     }
 
-    // Métodos auxiliares reutilizables
     private JTextField createTextField(boolean enabled) {
         JTextField field = new JTextField();
         field.setPreferredSize(new Dimension(250, 25));
@@ -197,14 +181,5 @@ public class BancosView extends JFrame {
 
     private void mostrarError(String mensaje) {
         JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
-    }
-
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(new FlatDarkLaf());
-        } catch (Exception ex) {
-            System.err.println("Error al cargar FlatLaf");
-        }
-        SwingUtilities.invokeLater(() -> new BancosView().setVisible(true));
     }
 }

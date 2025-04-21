@@ -2,51 +2,41 @@ package VIEW;
 
 import CONTROLLER.CategoriasController;
 import MODEL.Categorias;
-import com.formdev.flatlaf.FlatDarkLaf;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
-public class CategoriasView extends JFrame {
+public class CategoriasView extends JPanel {
 
     private JTextField txtId, txtNombre;
     private JButton btnGuardar, btnActualizar, btnEliminar;
     private JTable tabla;
     private DefaultTableModel modeloTabla;
-    private CategoriasController controller;
+    private final CategoriasController controller;
 
-    public CategoriasView() {
-        controller = new CategoriasController();
+    public CategoriasView(CategoriasController controller) {
+        this.controller = controller;
         initComponents();
         setupListeners();
         cargarCategorias();
     }
 
     private void initComponents() {
-        setTitle("Gestión de Categorías");
-        setSize(600, 450);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // Panel principal con márgenes
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
-        // Panel de formulario
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBorder(BorderFactory.createTitledBorder("Datos de Categoría"));
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 8, 8, 8);
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Campos del formulario
         addFormField(formPanel, gbc, "ID:", txtId = createTextField(false), 0);
         addFormField(formPanel, gbc, "Nombre:", txtNombre = createTextField(true), 1);
 
-        // Panel de botones
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         btnGuardar = new JButton("Guardar");
         btnActualizar = new JButton("Actualizar");
@@ -55,29 +45,25 @@ public class CategoriasView extends JFrame {
         buttonPanel.add(btnActualizar);
         buttonPanel.add(btnEliminar);
 
-        // Panel superior (formulario + botones)
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(formPanel, BorderLayout.CENTER);
         topPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        // Configuración de la tabla
         modeloTabla = new DefaultTableModel(new String[]{"ID", "Nombre"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-        
+
         tabla = new JTable(modeloTabla);
         styleTable(tabla);
-        
+
         JScrollPane scroll = new JScrollPane(tabla);
         scroll.setBorder(BorderFactory.createTitledBorder("Categorías Registradas"));
 
-        // Ensamblar la interfaz
-        mainPanel.add(topPanel, BorderLayout.NORTH);
-        mainPanel.add(scroll, BorderLayout.CENTER);
-        add(mainPanel);
+        add(topPanel, BorderLayout.NORTH);
+        add(scroll, BorderLayout.CENTER);
     }
 
     private void setupListeners() {
@@ -91,8 +77,7 @@ public class CategoriasView extends JFrame {
 
         btnActualizar.addActionListener(e -> {
             if (!txtId.getText().isEmpty() && validarCampos()) {
-                int id = Integer.parseInt(txtId.getText());
-                controller.actualizarCategoria(id, txtNombre.getText());
+                controller.actualizarCategoria(Integer.parseInt(txtId.getText()), txtNombre.getText());
                 limpiarCampos();
                 cargarCategorias();
             }
@@ -101,12 +86,12 @@ public class CategoriasView extends JFrame {
         btnEliminar.addActionListener(e -> {
             if (!txtId.getText().isEmpty()) {
                 int confirm = JOptionPane.showConfirmDialog(
-                    this, 
-                    "¿Confirmas que deseas eliminar esta categoría?", 
-                    "Confirmar eliminación", 
-                    JOptionPane.YES_NO_OPTION
+                        this,
+                        "¿Confirmas que deseas eliminar esta categoría?",
+                        "Confirmar eliminación",
+                        JOptionPane.YES_NO_OPTION
                 );
-                
+
                 if (confirm == JOptionPane.YES_OPTION) {
                     controller.eliminarCategoria(Integer.parseInt(txtId.getText()));
                     limpiarCampos();
@@ -150,7 +135,6 @@ public class CategoriasView extends JFrame {
         }
     }
 
-    // Métodos auxiliares reutilizables
     private JTextField createTextField(boolean enabled) {
         JTextField field = new JTextField();
         field.setPreferredSize(new Dimension(250, 25));
@@ -174,14 +158,5 @@ public class CategoriasView extends JFrame {
 
     private void mostrarError(String mensaje) {
         JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
-    }
-
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(new FlatDarkLaf());
-        } catch (Exception ex) {
-            System.err.println("Error al cargar FlatLaf");
-        }
-        SwingUtilities.invokeLater(() -> new CategoriasView().setVisible(true));
     }
 }

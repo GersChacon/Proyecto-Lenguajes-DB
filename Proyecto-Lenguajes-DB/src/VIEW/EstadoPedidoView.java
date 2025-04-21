@@ -2,41 +2,34 @@ package VIEW;
 
 import CONTROLLER.EstadoPedidoController;
 import MODEL.EstadoPedido;
-import com.formdev.flatlaf.FlatDarkLaf;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
-public class EstadoPedidoView extends JFrame {
+public class EstadoPedidoView extends JPanel {
 
     private JTextField txtId, txtNombre;
     private JButton btnGuardar, btnActualizar, btnEliminar;
     private JTable tabla;
     private DefaultTableModel modeloTabla;
-    private EstadoPedidoController controller;
+    private final EstadoPedidoController controller;
 
-    public EstadoPedidoView() {
-        controller = new EstadoPedidoController();
+    public EstadoPedidoView(EstadoPedidoController controller) {
+        this.controller = controller;
         initComponents();
         setupListeners();
         cargarEstados();
     }
 
     private void initComponents() {
-        setTitle("Gestión de Estados de Pedido");
-        setSize(600, 450);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
-        // Panel formulario
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBorder(BorderFactory.createTitledBorder("Datos del Estado de Pedido"));
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 8, 8, 8);
         gbc.anchor = GridBagConstraints.WEST;
@@ -44,7 +37,6 @@ public class EstadoPedidoView extends JFrame {
         addFormField(formPanel, gbc, "ID:", txtId = createTextField(false), 0);
         addFormField(formPanel, gbc, "Nombre:", txtNombre = createTextField(true), 1);
 
-        // Botones
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         btnGuardar = new JButton("Guardar");
         btnActualizar = new JButton("Actualizar");
@@ -57,83 +49,93 @@ public class EstadoPedidoView extends JFrame {
         topPanel.add(formPanel, BorderLayout.CENTER);
         topPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        // Tabla
         modeloTabla = new DefaultTableModel(new String[]{"ID", "Nombre"}, 0) {
+            @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
+
         tabla = new JTable(modeloTabla);
+        styleTable(tabla);
+
         JScrollPane scroll = new JScrollPane(tabla);
         scroll.setBorder(BorderFactory.createTitledBorder("Estados de Pedido Registrados"));
 
-        mainPanel.add(topPanel, BorderLayout.NORTH);
-        mainPanel.add(scroll, BorderLayout.CENTER);
-        add(mainPanel);
+        add(topPanel, BorderLayout.NORTH);
+        add(scroll, BorderLayout.CENTER);
     }
 
     private void setupListeners() {
         btnGuardar.addActionListener(e -> {
-            String nombre = txtNombre.getText().trim();
-            if (!nombre.isEmpty()) {
-                controller.insertarEstadoPedido(nombre);
+            if (validarCampos()) {
+                controller.insertarEstadoPedido(txtNombre.getText().trim());
                 limpiarCampos();
                 cargarEstados();
-            } else {
-                mostrarError("El campo 'Nombre' no puede estar vacío.");
             }
         });
 
         btnActualizar.addActionListener(e -> {
-            if (!txtId.getText().isEmpty()) {
+            if (!txtId.getText().isEmpty() && validarCampos()) {
                 try {
-                    int id = Integer.parseInt(txtId.getText());
-                    String nombre = txtNombre.getText().trim();
-                    if (!nombre.isEmpty()) {
-                        controller.actualizarEstadoPedido(id, nombre);
-                        limpiarCampos();
-                        cargarEstados();
-                    } else {
-                        mostrarError("El campo 'Nombre' no puede estar vacío.");
-                    }
+                    controller.actualizarEstadoPedido(
+                            Integer.parseInt(txtId.getText()),
+                            txtNombre.getText().trim()
+                    );
+                    limpiarCampos();
+                    cargarEstados();
                 } catch (NumberFormatException ex) {
-                    mostrarError("ID inválido.");
+                    mostrarError("ID inválido");
                 }
-            } else {
-                mostrarError("Selecciona un estado de pedido para actualizar.");
             }
         });
 
         btnEliminar.addActionListener(e -> {
             if (!txtId.getText().isEmpty()) {
                 int confirm = JOptionPane.showConfirmDialog(
-                    this, 
-                    "¿Deseas eliminar este estado de pedido?", 
-                    "Confirmar", 
-                    JOptionPane.YES_NO_OPTION
+                        this,
+                        "¿Confirmas que deseas eliminar este estado de pedido?",
+                        "Confirmar eliminación",
+                        JOptionPane.YES_NO_OPTION
                 );
+
                 if (confirm == JOptionPane.YES_OPTION) {
                     try {
-                        int id = Integer.parseInt(txtId.getText());
-                        controller.eliminarEstadoPedido(id);
+                        controller.eliminarEstadoPedido(Integer.parseInt(txtId.getText()));
                         limpiarCampos();
                         cargarEstados();
                     } catch (NumberFormatException ex) {
-                        mostrarError("ID inválido.");
+                        mostrarError("ID inválido");
                     }
                 }
             } else {
-                mostrarError("Selecciona un estado de pedido para eliminar.");
+                mostrarError("Selecciona un estado de pedido para eliminar");
             }
         });
 
         tabla.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 int fila = tabla.getSelectedRow();
-                txtId.setText(modeloTabla.getValueAt(fila, 0).toString());
-                txtNombre.setText(modeloTabla.getValueAt(fila, 1).toString());
+                if (fila >= 0) {
+                    txtId.setText(modeloTabla.getValueAt(fila, 0).toString());
+                    txtNombre.setText(modeloTabla.getValueAt(fila, 1).toString());
+                }
             }
         });
+    }
+
+    private boolean validarCampos() {
+        if (txtNombre.getText().trim().isEmpty()) {
+            mostrarError("El campo 'Nombre' es obligatorio");
+            return false;
+        }
+        return true;
+    }
+
+    private void limpiarCampos() {
+        txtId.setText("");
+        txtNombre.setText("");
     }
 
     private void cargarEstados() {
@@ -147,11 +149,6 @@ public class EstadoPedidoView extends JFrame {
         }
     }
 
-    private void limpiarCampos() {
-        txtId.setText("");
-        txtNombre.setText("");
-    }
-
     private JTextField createTextField(boolean enabled) {
         JTextField field = new JTextField();
         field.setPreferredSize(new Dimension(200, 25));
@@ -160,23 +157,20 @@ public class EstadoPedidoView extends JFrame {
     }
 
     private void addFormField(JPanel panel, GridBagConstraints gbc, String label, JTextField field, int row) {
-        gbc.gridy = row;
         gbc.gridx = 0;
+        gbc.gridy = row;
         panel.add(new JLabel(label), gbc);
         gbc.gridx = 1;
         panel.add(field, gbc);
     }
 
-    private void mostrarError(String mensaje) {
-        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    private void styleTable(JTable table) {
+        table.setRowHeight(25);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
     }
 
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(new FlatDarkLaf());
-        } catch (Exception e) {
-            System.err.println("No se pudo aplicar FlatLaf.");
-        }
-        SwingUtilities.invokeLater(() -> new EstadoPedidoView().setVisible(true));
+    private void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
 }

@@ -2,39 +2,31 @@ package VIEW;
 
 import CONTROLLER.DetallePedidoController;
 import MODEL.DetallePedido;
-import com.formdev.flatlaf.FlatDarkLaf;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
-public class DetallePedidoView extends JFrame {
+public class DetallePedidoView extends JPanel {
 
     private JTextField txtId, txtPedido, txtProducto, txtCantidad, txtPrecio;
     private JButton btnGuardar, btnActualizar, btnEliminar;
     private JTable tabla;
     private DefaultTableModel modeloTabla;
-    private DetallePedidoController controller;
+    private final DetallePedidoController controller;
 
-    public DetallePedidoView() {
-        controller = new DetallePedidoController();
+    public DetallePedidoView(DetallePedidoController controller) {
+        this.controller = controller;
         initComponents();
         setupListeners();
         cargarDetalles();
     }
 
     private void initComponents() {
-        setTitle("Gestión de Detalles de Pedido");
-        setSize(900, 600);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
-        // Panel formulario
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBorder(BorderFactory.createTitledBorder("Datos del Detalle de Pedido"));
         GridBagConstraints gbc = new GridBagConstraints();
@@ -48,7 +40,6 @@ public class DetallePedidoView extends JFrame {
         addFormField(formPanel, gbc, "Cantidad (kg):", txtCantidad = createTextField(true), 3);
         addFormField(formPanel, gbc, "Precio Unitario:", txtPrecio = createTextField(true), 4);
 
-        // Botones
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         btnGuardar = new JButton("Guardar");
         btnActualizar = new JButton("Actualizar");
@@ -61,9 +52,8 @@ public class DetallePedidoView extends JFrame {
         topPanel.add(formPanel, BorderLayout.CENTER);
         topPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        // Tabla
         modeloTabla = new DefaultTableModel(
-            new String[]{"ID", "ID Pedido", "ID Producto", "Cantidad (kg)", "Precio Unitario", "Subtotal"}, 0) {
+                new String[]{"ID", "ID Pedido", "ID Producto", "Cantidad (kg)", "Precio Unitario", "Subtotal"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -71,13 +61,12 @@ public class DetallePedidoView extends JFrame {
         };
 
         tabla = new JTable(modeloTabla);
-        tabla.setRowHeight(25);
+        styleTable(tabla);
         JScrollPane scroll = new JScrollPane(tabla);
         scroll.setBorder(BorderFactory.createTitledBorder("Detalles de Pedido Registrados"));
 
-        mainPanel.add(topPanel, BorderLayout.NORTH);
-        mainPanel.add(scroll, BorderLayout.CENTER);
-        add(mainPanel);
+        add(topPanel, BorderLayout.NORTH);
+        add(scroll, BorderLayout.CENTER);
     }
 
     private void setupListeners() {
@@ -85,10 +74,10 @@ public class DetallePedidoView extends JFrame {
             try {
                 if (validarCampos()) {
                     controller.insertarDetalle(
-                        Integer.parseInt(txtPedido.getText()),
-                        Integer.parseInt(txtProducto.getText()),
-                        Double.parseDouble(txtCantidad.getText()),
-                        Double.parseDouble(txtPrecio.getText())
+                            Integer.parseInt(txtPedido.getText()),
+                            Integer.parseInt(txtProducto.getText()),
+                            Double.parseDouble(txtCantidad.getText()),
+                            Double.parseDouble(txtPrecio.getText())
                     );
                     limpiarCampos();
                     cargarDetalles();
@@ -103,11 +92,11 @@ public class DetallePedidoView extends JFrame {
                 try {
                     if (validarCampos()) {
                         controller.actualizarDetalle(
-                            Integer.parseInt(txtId.getText()),
-                            Integer.parseInt(txtPedido.getText()),
-                            Integer.parseInt(txtProducto.getText()),
-                            Double.parseDouble(txtCantidad.getText()),
-                            Double.parseDouble(txtPrecio.getText())
+                                Integer.parseInt(txtId.getText()),
+                                Integer.parseInt(txtPedido.getText()),
+                                Integer.parseInt(txtProducto.getText()),
+                                Double.parseDouble(txtCantidad.getText()),
+                                Double.parseDouble(txtPrecio.getText())
                         );
                         limpiarCampos();
                         cargarDetalles();
@@ -123,12 +112,12 @@ public class DetallePedidoView extends JFrame {
         btnEliminar.addActionListener(e -> {
             if (!txtId.getText().isEmpty()) {
                 int confirm = JOptionPane.showConfirmDialog(
-                    this, 
-                    "¿Estás seguro de eliminar este detalle de pedido?", 
-                    "Confirmar Eliminación", 
-                    JOptionPane.YES_NO_OPTION
+                        this,
+                        "¿Estás seguro de eliminar este detalle de pedido?",
+                        "Confirmar Eliminación",
+                        JOptionPane.YES_NO_OPTION
                 );
-                
+
                 if (confirm == JOptionPane.YES_OPTION) {
                     controller.eliminarDetalle(Integer.parseInt(txtId.getText()));
                     limpiarCampos();
@@ -155,18 +144,18 @@ public class DetallePedidoView extends JFrame {
     }
 
     private boolean validarCampos() {
-        if (txtPedido.getText().trim().isEmpty() || 
-            txtProducto.getText().trim().isEmpty() || 
-            txtCantidad.getText().trim().isEmpty() || 
-            txtPrecio.getText().trim().isEmpty()) {
+        if (txtPedido.getText().trim().isEmpty()
+                || txtProducto.getText().trim().isEmpty()
+                || txtCantidad.getText().trim().isEmpty()
+                || txtPrecio.getText().trim().isEmpty()) {
             mostrarError("Todos los campos son obligatorios");
             return false;
         }
-        
+
         try {
             double cantidad = Double.parseDouble(txtCantidad.getText());
             double precio = Double.parseDouble(txtPrecio.getText());
-            
+
             if (cantidad <= 0 || precio <= 0) {
                 mostrarError("Cantidad y precio deben ser valores positivos");
                 return false;
@@ -175,7 +164,7 @@ public class DetallePedidoView extends JFrame {
             mostrarError("Cantidad y precio deben ser valores numéricos válidos");
             return false;
         }
-        
+
         return true;
     }
 
@@ -217,16 +206,13 @@ public class DetallePedidoView extends JFrame {
         panel.add(field, gbc);
     }
 
-    private void mostrarError(String mensaje) {
-        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    private void styleTable(JTable table) {
+        table.setRowHeight(25);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
     }
 
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(new FlatDarkLaf());
-        } catch (Exception e) {
-            System.err.println("No se pudo aplicar FlatLaf.");
-        }
-        SwingUtilities.invokeLater(() -> new DetallePedidoView().setVisible(true));
+    private void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
 }

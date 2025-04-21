@@ -2,39 +2,31 @@ package VIEW;
 
 import CONTROLLER.ProveedoresController;
 import MODEL.Proveedores;
-import com.formdev.flatlaf.FlatDarkLaf;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
-public class ProveedoresView extends JFrame {
+public class ProveedoresView extends JPanel {
 
     private JTextField txtId, txtNombre, txtTelefono, txtEmail, txtDireccion;
     private JButton btnGuardar, btnActualizar, btnEliminar, btnLimpiar;
     private JTable tabla;
     private DefaultTableModel modeloTabla;
-    private ProveedoresController controller;
+    private final ProveedoresController controller;
 
-    public ProveedoresView() {
-        controller = new ProveedoresController();
+    public ProveedoresView(ProveedoresController controller) {
+        this.controller = controller;
         initComponents();
         setupListeners();
         cargarProveedores();
     }
 
     private void initComponents() {
-        setTitle("Gestión de Proveedores");
-        setSize(850, 600); // Ajustado para mejor visualización
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // Panel principal con márgenes
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
-        // Panel de formulario (GridBagLayout para alineación precisa)
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBorder(BorderFactory.createTitledBorder("Datos del Proveedor"));
 
@@ -42,14 +34,12 @@ public class ProveedoresView extends JFrame {
         gbc.insets = new Insets(8, 8, 8, 8);
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Campos del formulario
-        addFormField(formPanel, gbc, "ID Proveedor:", txtId = createTextField(false), 0);
+        addFormField(formPanel, gbc, "ID:", txtId = createTextField(false), 0);
         addFormField(formPanel, gbc, "Nombre:", txtNombre = createTextField(true), 1);
         addFormField(formPanel, gbc, "Teléfono:", txtTelefono = createTextField(true), 2);
         addFormField(formPanel, gbc, "Email:", txtEmail = createTextField(true), 3);
         addFormField(formPanel, gbc, "Dirección:", txtDireccion = createTextField(true), 4);
 
-        // Panel de botones (alineados a la derecha)
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         btnGuardar = new JButton("Guardar");
         btnActualizar = new JButton("Actualizar");
@@ -60,46 +50,139 @@ public class ProveedoresView extends JFrame {
         buttonPanel.add(btnEliminar);
         buttonPanel.add(btnLimpiar);
 
-        // Panel superior (formulario + botones)
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(formPanel, BorderLayout.CENTER);
         topPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        // Configuración de la tabla
         modeloTabla = new DefaultTableModel(
-            new String[]{"ID", "Nombre", "Teléfono", "Email", "Dirección"}, 0) {
+                new String[]{"ID", "Nombre", "Teléfono", "Email", "Dirección"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-        
+
         tabla = new JTable(modeloTabla);
-        styleTable(tabla); // Aplicar estilos consistentes
-        
+        styleTable(tabla);
+
         JScrollPane scroll = new JScrollPane(tabla);
         scroll.setBorder(BorderFactory.createTitledBorder("Proveedores Registrados"));
 
-        // Ensamblar la interfaz
-        mainPanel.add(topPanel, BorderLayout.NORTH);
-        mainPanel.add(scroll, BorderLayout.CENTER);
-        add(mainPanel);
+        add(topPanel, BorderLayout.NORTH);
+        add(scroll, BorderLayout.CENTER);
     }
 
     private void setupListeners() {
-        btnGuardar.addActionListener(e -> guardarProveedor());
-        btnActualizar.addActionListener(e -> actualizarProveedor());
-        btnEliminar.addActionListener(e -> eliminarProveedor());
+        btnGuardar.addActionListener(e -> {
+            if (validarCampos()) {
+                try {
+                    controller.insertarProveedor(
+                            txtNombre.getText().trim(),
+                            txtTelefono.getText().trim(),
+                            txtEmail.getText().trim(),
+                            txtDireccion.getText().trim()
+                    );
+                    mostrarMensaje("Proveedor guardado correctamente");
+                    limpiarCampos();
+                    cargarProveedores();
+                } catch (Exception ex) {
+                    mostrarError("Error al guardar el proveedor: " + ex.getMessage());
+                }
+            }
+        });
+
+        btnActualizar.addActionListener(e -> {
+            if (!txtId.getText().isEmpty() && validarCampos()) {
+                try {
+                    controller.actualizarProveedor(
+                            Integer.parseInt(txtId.getText()),
+                            txtNombre.getText().trim(),
+                            txtTelefono.getText().trim(),
+                            txtEmail.getText().trim(),
+                            txtDireccion.getText().trim()
+                    );
+                    mostrarMensaje("Proveedor actualizado correctamente");
+                    limpiarCampos();
+                    cargarProveedores();
+                } catch (Exception ex) {
+                    mostrarError("Error al actualizar el proveedor: " + ex.getMessage());
+                }
+            }
+        });
+
+        btnEliminar.addActionListener(e -> {
+            if (!txtId.getText().isEmpty()) {
+                int confirm = JOptionPane.showConfirmDialog(
+                        this,
+                        "¿Confirmas que deseas eliminar este proveedor?",
+                        "Confirmar eliminación",
+                        JOptionPane.YES_NO_OPTION
+                );
+
+                if (confirm == JOptionPane.YES_OPTION) {
+                    try {
+                        controller.eliminarProveedor(Integer.parseInt(txtId.getText()));
+                        mostrarMensaje("Proveedor eliminado correctamente");
+                        limpiarCampos();
+                        cargarProveedores();
+                    } catch (Exception ex) {
+                        mostrarError("Error al eliminar el proveedor: " + ex.getMessage());
+                    }
+                }
+            }
+        });
+
         btnLimpiar.addActionListener(e -> limpiarCampos());
 
         tabla.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
-                seleccionarProveedorDeTabla();
+                int fila = tabla.getSelectedRow();
+                if (fila >= 0) {
+                    txtId.setText(modeloTabla.getValueAt(fila, 0).toString());
+                    txtNombre.setText(modeloTabla.getValueAt(fila, 1).toString());
+                    txtTelefono.setText(modeloTabla.getValueAt(fila, 2).toString());
+                    txtEmail.setText(modeloTabla.getValueAt(fila, 3).toString());
+                    txtDireccion.setText(modeloTabla.getValueAt(fila, 4).toString());
+                }
             }
         });
     }
 
-    // Métodos auxiliares (consistentes con MetodoPagoView)
+    private boolean validarCampos() {
+        if (txtNombre.getText().trim().isEmpty()) {
+            mostrarError("El campo 'Nombre' es obligatorio");
+            return false;
+        }
+        if (!txtEmail.getText().trim().isEmpty() && !txtEmail.getText().contains("@")) {
+            mostrarError("El email no tiene un formato válido");
+            return false;
+        }
+        return true;
+    }
+
+    private void cargarProveedores() {
+        modeloTabla.setRowCount(0);
+        List<Proveedores> lista = controller.obtenerTodosLosProveedores();
+        for (Proveedores proveedor : lista) {
+            modeloTabla.addRow(new Object[]{
+                proveedor.getIdProveedor(),
+                proveedor.getNombre(),
+                proveedor.getTelefono(),
+                proveedor.getEmail(),
+                proveedor.getDireccion()
+            });
+        }
+    }
+
+    private void limpiarCampos() {
+        txtId.setText("");
+        txtNombre.setText("");
+        txtTelefono.setText("");
+        txtEmail.setText("");
+        txtDireccion.setText("");
+    }
+
     private JTextField createTextField(boolean enabled) {
         JTextField field = new JTextField();
         field.setPreferredSize(new Dimension(250, 25));
@@ -111,7 +194,6 @@ public class ProveedoresView extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = row;
         panel.add(new JLabel(label), gbc);
-        
         gbc.gridx = 1;
         panel.add(field, gbc);
     }
@@ -126,133 +208,7 @@ public class ProveedoresView extends JFrame {
         JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
-    private void guardarProveedor() {
-        try {
-            String nombre = txtNombre.getText().trim();
-            String telefono = txtTelefono.getText().trim();
-            String email = txtEmail.getText().trim();
-            String direccion = txtDireccion.getText().trim();
-
-            if (nombre.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "El nombre es obligatorio", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            controller.insertarProveedor(nombre, telefono, email, direccion);
-            JOptionPane.showMessageDialog(this, "Proveedor guardado correctamente");
-            limpiarCampos();
-            cargarProveedores();
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al guardar el proveedor: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-        }
-    }
-
-    private void actualizarProveedor() {
-        if (!txtId.getText().isEmpty()) {
-            try {
-                int idProveedor = Integer.parseInt(txtId.getText());
-                String nombre = txtNombre.getText().trim();
-                String telefono = txtTelefono.getText().trim();
-                String email = txtEmail.getText().trim();
-                String direccion = txtDireccion.getText().trim();
-
-                if (nombre.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "El nombre es obligatorio", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                controller.actualizarProveedor(idProveedor, nombre, telefono, email, direccion);
-                JOptionPane.showMessageDialog(this, "Proveedor actualizado correctamente");
-                limpiarCampos();
-                cargarProveedores();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error al actualizar el proveedor: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "Seleccione un proveedor para actualizar", "Advertencia", JOptionPane.WARNING_MESSAGE);
-        }
-    }
-
-    private void eliminarProveedor() {
-        if (!txtId.getText().isEmpty()) {
-            int confirm = JOptionPane.showConfirmDialog(this,
-                    "¿Está seguro de eliminar este proveedor?",
-                    "Confirmar eliminación",
-                    JOptionPane.YES_NO_OPTION);
-
-            if (confirm == JOptionPane.YES_OPTION) {
-                try {
-                    int idProveedor = Integer.parseInt(txtId.getText());
-                    controller.eliminarProveedor(idProveedor);
-                    JOptionPane.showMessageDialog(this, "Proveedor eliminado correctamente");
-                    limpiarCampos();
-                    cargarProveedores();
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Error al eliminar el proveedor: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                    ex.printStackTrace();
-                }
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "Seleccione un proveedor para eliminar", "Advertencia", JOptionPane.WARNING_MESSAGE);
-        }
-    }
-
-    private void seleccionarProveedorDeTabla() {
-        int fila = tabla.getSelectedRow();
-        if (fila >= 0) {
-            txtId.setText(modeloTabla.getValueAt(fila, 0).toString());
-            txtNombre.setText(modeloTabla.getValueAt(fila, 1).toString());
-            txtTelefono.setText(modeloTabla.getValueAt(fila, 2).toString());
-            txtEmail.setText(modeloTabla.getValueAt(fila, 3).toString());
-            txtDireccion.setText(modeloTabla.getValueAt(fila, 4).toString());
-        }
-    }
-
-    private void limpiarCampos() {
-        txtId.setText("");
-        txtNombre.setText("");
-        txtTelefono.setText("");
-        txtEmail.setText("");
-        txtDireccion.setText("");
-    }
-
-    private void cargarProveedores() {
-        try {
-            modeloTabla.setRowCount(0);
-
-            List<Proveedores> listaProveedores = controller.obtenerTodosLosProveedores();
-
-            if (listaProveedores.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
-                        "No hay proveedores registrados",
-                        "Información", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                for (Proveedores proveedor : listaProveedores) {
-                    modeloTabla.addRow(new Object[]{
-                        proveedor.getIdProveedor(),
-                        proveedor.getNombre(),
-                        proveedor.getTelefono(),
-                        proveedor.getEmail(),
-                        proveedor.getDireccion()
-                    });
-                }
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this,
-                    "Error al cargar proveedores: " + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-        }
-    }
-
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(new FlatDarkLaf());
-        } catch (Exception e) {
-            System.err.println("Error al cargar FlatLaf");
-        }
-        SwingUtilities.invokeLater(() -> new ProveedoresView().setVisible(true));
+    private void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Información", JOptionPane.INFORMATION_MESSAGE);
     }
 }
