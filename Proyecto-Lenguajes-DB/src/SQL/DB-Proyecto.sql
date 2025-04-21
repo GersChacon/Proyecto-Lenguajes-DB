@@ -52,7 +52,7 @@ CREATE TABLE Productos (
     nombre VARCHAR2(255) NOT NULL,
     precio_kg NUMBER(10,2) NOT NULL CHECK (precio_kg >= 0),
     stock_kg NUMBER(10,2) NOT NULL CHECK (stock_kg >= 0),
-    FOREIGN KEY (id_tipo) REFERENCES Tipos(id_tipo),
+    FOREIGN KEY (id_tipo) REFERENCES TipoProducto(id_tipo),
     FOREIGN KEY (id_proveedor) REFERENCES Proveedores(id_proveedor)
 );
 
@@ -144,7 +144,7 @@ BEGIN
     VALUES (p_nombre, p_direccion, p_telefono, p_email);
     COMMIT;
 END InsertarBanco;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE ActualizarBanco(
     p_id_banco IN INT,
@@ -162,14 +162,14 @@ BEGIN
     WHERE id_banco = p_id_banco;
     COMMIT;
 END ActualizarBanco;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE EliminarBanco(p_id_banco IN INT) AS
 BEGIN
     DELETE FROM Bancos WHERE id_banco = p_id_banco;
     COMMIT;
 END EliminarBanco;
-/
+ 
 
 -- =============================
 -- 3. CRUD PARA CLIENTES
@@ -186,7 +186,7 @@ BEGIN
     VALUES (p_nombre, p_direccion, p_telefono, p_email);
     COMMIT;
 END InsertarCliente;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE ActualizarCliente(
     p_id_cliente IN INT,
@@ -204,14 +204,14 @@ BEGIN
     WHERE id_cliente = p_id_cliente;
     COMMIT;
 END ActualizarCliente;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE EliminarCliente(p_id_cliente IN INT) AS
 BEGIN
     DELETE FROM Clientes WHERE id_cliente = p_id_cliente;
     COMMIT;
 END EliminarCliente;
-/
+ 
 
 -- =============================
 -- 4. CRUD PARA PROVEEDORES
@@ -228,7 +228,7 @@ BEGIN
     VALUES (p_nombre, p_telefono, p_email, p_direccion);
     COMMIT;
 END InsertarProveedor;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE ActualizarProveedor(
     p_id_proveedor IN INT,
@@ -246,14 +246,14 @@ BEGIN
     WHERE id_proveedor = p_id_proveedor;
     COMMIT;
 END ActualizarProveedor;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE EliminarProveedor(p_id_proveedor IN INT) AS
 BEGIN
     DELETE FROM Proveedores WHERE id_proveedor = p_id_proveedor;
     COMMIT;
 END EliminarProveedor;
-/
+ 
 
 -- =============================
 -- 5. CRUD PARA CATEGORIAS
@@ -267,7 +267,7 @@ BEGIN
     VALUES (p_nombre);
     COMMIT;
 END InsertarCategoria;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE ActualizarCategoria(
     p_id_categoria IN INT,
@@ -279,14 +279,14 @@ BEGIN
     WHERE id_categoria = p_id_categoria;
     COMMIT;
 END ActualizarCategoria;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE EliminarCategoria(p_id_categoria IN INT) AS
 BEGIN
     DELETE FROM Categorias WHERE id_categoria = p_id_categoria;
     COMMIT;
 END EliminarCategoria;
-/
+ 
 
 -- =============================
 -- 6. CRUD PARA TIPOS DE PRODUCTO
@@ -301,7 +301,7 @@ BEGIN
     VALUES (p_id_categoria, p_nombre);
     COMMIT;
 END InsertarTipoProducto;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE ActualizarTipoProducto(
     p_id_tipo IN INT,
@@ -315,14 +315,14 @@ BEGIN
     WHERE id_tipo = p_id_tipo;
     COMMIT;
 END ActualizarTipoProducto;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE EliminarTipoProducto(p_id_tipo IN INT) AS
 BEGIN
     DELETE FROM TipoProducto WHERE id_tipo = p_id_tipo;
     COMMIT;
 END EliminarTipoProducto;
-/
+ 
 
 -- =============================
 -- 7. CRUD PARA PRODUCTOS
@@ -340,7 +340,7 @@ BEGIN
     VALUES (p_id_tipo, p_id_proveedor, p_nombre, p_precio_kg, p_stock_kg);
     COMMIT;
 END InsertarProducto;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE ActualizarProducto(
     p_id_producto IN INT,
@@ -360,14 +360,14 @@ BEGIN
     WHERE id_producto = p_id_producto;
     COMMIT;
 END ActualizarProducto;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE EliminarProducto(p_id_producto IN INT) AS
 BEGIN
     DELETE FROM Productos WHERE id_producto = p_id_producto;
     COMMIT;
 END EliminarProducto;
-/
+ 
 
 -- =============================
 -- 8. CRUD PARA ESTADOS DE PEDIDO
@@ -381,7 +381,7 @@ BEGIN
     VALUES (p_nombre);
     COMMIT;
 END InsertarEstadoPedido;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE ActualizarEstadoPedido(
     p_id_estado IN INT,
@@ -393,14 +393,14 @@ BEGIN
     WHERE id_estado = p_id_estado;
     COMMIT;
 END ActualizarEstadoPedido;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE EliminarEstadoPedido(p_id_estado IN INT) AS
 BEGIN
     DELETE FROM Estados_Pedido WHERE id_estado = p_id_estado;
     COMMIT;
 END EliminarEstadoPedido;
-/
+ 
 
 -- =============================
 -- 9. CRUD PARA PEDIDOS
@@ -417,7 +417,7 @@ BEGIN
     VALUES (p_id_cliente, p_id_estado, p_fecha_pedido, p_monto_pagado);
     COMMIT;
 END InsertarPedido;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE ActualizarPedido(
     p_id_pedido IN INT,
@@ -435,14 +435,14 @@ BEGIN
     WHERE id_pedido = p_id_pedido;
     COMMIT;
 END ActualizarPedido;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE EliminarPedido(p_id_pedido IN INT) AS
 BEGIN
     DELETE FROM Pedidos WHERE id_pedido = p_id_pedido;
     COMMIT;
 END EliminarPedido;
-/
+ 
 
 -- =============================
 -- 10. CRUD PARA DETALLES DE PEDIDO
@@ -459,7 +459,7 @@ BEGIN
     VALUES (p_id_pedido, p_id_producto, p_cantidad_kg, p_precio_unitario);
     COMMIT;
 END InsertarDetallePedido;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE ActualizarDetallePedido(
     p_id_detalle IN INT,
@@ -477,14 +477,14 @@ BEGIN
     WHERE id_detalle = p_id_detalle;
     COMMIT;
 END ActualizarDetallePedido;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE EliminarDetallePedido(p_id_detalle IN INT) AS
 BEGIN
     DELETE FROM Detalle_Pedido WHERE id_detalle = p_id_detalle;
     COMMIT;
 END EliminarDetallePedido;
-/
+ 
 
 -- =============================
 -- 11. CRUD PARA INVENTARIO
@@ -502,7 +502,7 @@ BEGIN
     VALUES (p_id_producto, p_tipo_movimiento, p_cantidad_kg, p_fecha_movimiento, p_id_detalle_pedido);
     COMMIT;
 END InsertarInventario;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE ActualizarInventario(
     p_id_movimiento IN INT,
@@ -522,14 +522,14 @@ BEGIN
     WHERE id_movimiento = p_id_movimiento;
     COMMIT;
 END ActualizarInventario;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE EliminarInventario(p_id_movimiento IN INT) AS
 BEGIN
     DELETE FROM Inventario WHERE id_movimiento = p_id_movimiento;
     COMMIT;
 END EliminarInventario;
-/
+ 
 
 -- =============================
 -- 12. CRUD PARA METODOS DE PAGO
@@ -543,7 +543,7 @@ BEGIN
     VALUES (p_nombre);
     COMMIT;
 END InsertarMetodoPago;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE ActualizarMetodoPago(
     p_id_metodo_pago IN INT,
@@ -555,14 +555,14 @@ BEGIN
     WHERE id_metodo_pago = p_id_metodo_pago;
     COMMIT;
 END ActualizarMetodoPago;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE EliminarMetodoPago(p_id_metodo_pago IN INT) AS
 BEGIN
     DELETE FROM Metodos_Pago WHERE id_metodo_pago = p_id_metodo_pago;
     COMMIT;
 END EliminarMetodoPago;
-/
+ 
 
 -- =============================
 -- 13. CRUD PARA PAGOS
@@ -579,7 +579,7 @@ BEGIN
     VALUES (p_id_pedido, p_monto, p_fecha_pago, p_estado_pago);
     COMMIT;
 END InsertarPago;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE ActualizarPago(
     p_id_pago IN NUMBER,
@@ -597,14 +597,14 @@ BEGIN
     WHERE id_pago = p_id_pago;
     COMMIT;
 END ActualizarPago;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE EliminarPago(p_id_pago IN NUMBER) AS
 BEGIN
     DELETE FROM Pagos WHERE id_pago = p_id_pago;
     COMMIT;
 END EliminarPago;
-/
+ 
 
 -- =============================
 -- 14. CRUD PARA DETALLES DE PAGO
@@ -624,7 +624,7 @@ BEGIN
     VALUES (p_id_pago, p_id_metodo_pago, p_id_banco, p_numero_tarjeta, p_nombre_titular, p_fecha_expiracion, p_numero_transferencia);
     COMMIT;
 END InsertarDetallePago;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE ActualizarDetallePago(
     p_id_detalle_pago IN INT,
@@ -648,14 +648,14 @@ BEGIN
     WHERE id_detalle_pago = p_id_detalle_pago;
     COMMIT;
 END ActualizarDetallePago;
-/
+ 
 
 CREATE OR REPLACE PROCEDURE EliminarDetallePago(p_id_detalle_pago IN INT) AS
 BEGIN
     DELETE FROM Detalles_Pago WHERE id_detalle_pago = p_id_detalle_pago;
     COMMIT;
 END EliminarDetallePago;
-/
+ 
 
 -- =============================
 -- 15. FUNCIONES
@@ -667,7 +667,7 @@ BEGIN
     SELECT SUM(stock_kg) INTO total_stock FROM Productos;
     RETURN total_stock;
 END ObtenerTotalStock;
-/
+ 
 
 CREATE OR REPLACE FUNCTION ObtenerTotalPedidosCliente(p_id_cliente IN INT) RETURN NUMBER IS
     total_pedidos NUMBER;
@@ -675,26 +675,195 @@ BEGIN
     SELECT COUNT(*) INTO total_pedidos FROM Pedidos WHERE id_cliente = p_id_cliente;
     RETURN total_pedidos;
 END ObtenerTotalPedidosCliente;
+
+-- FUNCIONES PERSONALIZADAS
+
+-- Función 1: Obtener el total de pedidos por cliente
+CREATE OR REPLACE FUNCTION fn_total_pedidos_por_cliente(p_id_cliente IN NUMBER) RETURN NUMBER IS
+  v_total NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO v_total FROM Pedidos WHERE id_cliente = p_id_cliente;
+  RETURN v_total;
+END;
+/
+
+-- Función 2: Calcular el stock total por proveedor
+CREATE OR REPLACE FUNCTION fn_stock_total_por_proveedor(p_id_proveedor IN NUMBER) RETURN NUMBER IS
+  v_stock NUMBER;
+BEGIN
+  SELECT NVL(SUM(stock_kg), 0) INTO v_stock FROM Productos WHERE id_proveedor = p_id_proveedor;
+  RETURN v_stock;
+END;
+/
+
+-- Función 3: Validar si una categoría está vacía
+CREATE OR REPLACE FUNCTION fn_categoria_esta_libre(p_id_categoria IN NUMBER) RETURN BOOLEAN IS
+  v_count NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO v_count FROM TipoProducto WHERE id_categoria = p_id_categoria;
+  RETURN v_count = 0;
+END;
 /
 
 -- =============================
 -- 16. VISTAS
 -- =============================
 
+CREATE OR REPLACE VIEW Vista_Bancos AS
+SELECT 
+    id_banco,
+    nombre,
+    direccion,
+    telefono,
+    email
+FROM 
+    Bancos
+ORDER BY 
+    nombre;
+
+CREATE OR REPLACE VIEW Vista_Categorias AS
+SELECT 
+    id_categoria,
+    nombre
+FROM 
+    Categorias
+ORDER BY 
+    nombre;
+
+CREATE OR REPLACE VIEW Vista_Clientes AS
+SELECT 
+    id_cliente,
+    nombre,
+    direccion,
+    telefono,
+    email
+FROM 
+    Clientes
+ORDER BY 
+    nombre;
+
+CREATE OR REPLACE VIEW Vista_EstadosPedido AS
+SELECT 
+    id_estado,
+    nombre
+FROM 
+    Estados_Pedido
+ORDER BY 
+    id_estado;
+
 CREATE OR REPLACE VIEW Vista_Productos AS
-SELECT p.id_producto, p.nombre, p.precio_kg, p.stock_kg, c.nombre AS categoria, pr.nombre AS proveedor
-FROM Productos p
-JOIN TipoProducto t ON p.id_tipo = t.id_tipo
-JOIN Categorias c ON t.id_categoria = c.id_categoria
-JOIN Proveedores pr ON p.id_proveedor = pr.id_proveedor;
-/
+SELECT 
+    id_producto,
+    id_tipo,
+    id_proveedor,
+    nombre,
+    precio_kg,
+    stock_kg
+FROM 
+    Productos
+ORDER BY 
+    nombre;
+
+CREATE OR REPLACE VIEW Vista_Proveedores AS
+SELECT 
+    id_proveedor,
+    nombre,
+    telefono,
+    email,
+    direccion
+FROM 
+    Proveedores
+ORDER BY 
+    nombre;
+
+CREATE OR REPLACE VIEW Vista_TiposProducto AS
+SELECT 
+    id_tipo,
+    id_categoria,
+    nombre
+FROM 
+    TipoProducto
+ORDER BY 
+    nombre;
+
+CREATE OR REPLACE VIEW Vista_DetallesPago AS
+SELECT 
+    id_detalle_pago,
+    id_pago,
+    id_metodo_pago,
+    id_banco,
+    numero_tarjeta,
+    nombre_titular,
+    fecha_expiracion,
+    numero_transferencia
+FROM 
+    Detalles_Pago;
+
+CREATE OR REPLACE VIEW Vista_DetallesPedido AS
+SELECT 
+    id_detalle,
+    id_pedido,
+    id_producto,
+    cantidad_kg,
+    precio_unitario,
+    subtotal
+FROM 
+    Detalle_Pedido;
+
+CREATE OR REPLACE VIEW Vista_MovimientosInventario AS
+SELECT 
+    id_movimiento,
+    id_producto,
+    tipo_movimiento,
+    cantidad_kg,
+    fecha_movimiento,
+    id_detalle_pedido
+FROM 
+    Inventario;
+
+CREATE OR REPLACE VIEW Vista_MetodosPago AS
+SELECT 
+    id_metodo_pago,
+    nombre
+FROM 
+    Metodos_Pago;
+
+CREATE OR REPLACE VIEW Vista_Pagos AS
+SELECT 
+    id_pago,
+    id_pedido,
+    monto,
+    fecha_pago,
+    estado_pago
+FROM 
+    Pagos;
 
 CREATE OR REPLACE VIEW Vista_Pedidos AS
-SELECT pe.id_pedido, cl.nombre AS cliente, pe.fecha_pedido, pe.monto_pagado, ep.nombre AS estado
-FROM Pedidos pe
-JOIN Clientes cl ON pe.id_cliente = cl.id_cliente
-JOIN Estados_Pedido ep ON pe.id_estado = ep.id_estado;
-/
+SELECT 
+    id_pedido,
+    id_cliente,
+    id_estado,
+    fecha_pedido,
+    monto_pagado
+FROM 
+    Pedidos;
+
+-- VISTAS PERSONALIZADAS
+
+-- Vista 1: Vista de productos con su categoría y proveedor
+CREATE OR REPLACE VIEW vista_productos_detalle AS
+SELECT p.id_producto, p.nombre AS producto, c.nombre AS categoria, pr.nombre AS proveedor, p.precio_kg, p.stock_kg
+FROM Productos p
+JOIN TipoProducto tp ON p.id_tipo = tp.id_tipo
+JOIN Categorias c ON tp.id_categoria = c.id_categoria
+JOIN Proveedores pr ON p.id_proveedor = pr.id_proveedor;
+
+-- Vista 2: Vista de clientes con su cantidad de pedidos
+CREATE OR REPLACE VIEW vista_clientes_con_pedidos AS
+SELECT c.id_cliente, c.nombre, c.email, COUNT(p.id_pedido) AS total_pedidos
+FROM Clientes c
+LEFT JOIN Pedidos p ON c.id_cliente = p.id_cliente
+GROUP BY c.id_cliente, c.nombre, c.email;
 
 -- =============================
 -- 17. TRIGGERS
@@ -708,7 +877,7 @@ BEGIN
     SET stock_kg = stock_kg - :NEW.cantidad_kg
     WHERE id_producto = :NEW.id_producto;
 END;
-/
+ 
 
 CREATE OR REPLACE TRIGGER VerificacionEstadoPago
 BEFORE INSERT ON Pagos
@@ -719,54 +888,119 @@ BEGIN
     END IF;
 END;
 
+-- TRIGGERS PERSONALIZADOS
+
+-- TRIGGER 1: Evitar eliminar una categoría si tiene productos asignados
+CREATE OR REPLACE TRIGGER trg_no_borrar_categoria_con_productos
+BEFORE DELETE ON Categorias
+FOR EACH ROW
+DECLARE
+  v_count NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO v_count FROM TipoProducto WHERE id_categoria = :OLD.id_categoria;
+  IF v_count > 0 THEN
+    RAISE_APPLICATION_ERROR(-20001, 'No se puede eliminar una categoría que tiene productos asignados.');
+  END IF;
+END;
+/
+
+-- TRIGGER 2: Evitar eliminar un proveedor si tiene productos asociados
+CREATE OR REPLACE TRIGGER trg_no_borrar_proveedor_con_productos
+BEFORE DELETE ON Proveedores
+FOR EACH ROW
+DECLARE
+  v_count NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO v_count FROM Productos WHERE id_proveedor = :OLD.id_proveedor;
+  IF v_count > 0 THEN
+    RAISE_APPLICATION_ERROR(-20002, 'No se puede eliminar un proveedor con productos asociados.');
+  END IF;
+END;
+/
+
+-- TRIGGER 3: Evitar eliminar un cliente si tiene pedidos realizados
+CREATE OR REPLACE TRIGGER trg_no_borrar_cliente_con_pedidos
+BEFORE DELETE ON Clientes
+FOR EACH ROW
+DECLARE
+  v_count NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO v_count FROM Pedidos WHERE id_cliente = :OLD.id_cliente;
+  IF v_count > 0 THEN
+    RAISE_APPLICATION_ERROR(-20003, 'No se puede eliminar un cliente que tiene pedidos realizados.');
+  END IF;
+END;
+/
+
+-- TRIGGER 4: Evitar eliminar un estado de pedido si está siendo usado
+CREATE OR REPLACE TRIGGER trg_no_borrar_estado_con_pedidos
+BEFORE DELETE ON Estados_Pedido
+FOR EACH ROW
+DECLARE
+  v_count NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO v_count FROM Pedidos WHERE id_estado = :OLD.id_estado;
+  IF v_count > 0 THEN
+    RAISE_APPLICATION_ERROR(-20004, 'No se puede eliminar un estado de pedido que está en uso.');
+  END IF;
+END;
+/
+
+-- TRIGGER 5: Evitar eliminar un tipo de producto si hay productos relacionados
+CREATE OR REPLACE TRIGGER trg_no_borrar_tipo_producto_con_productos
+BEFORE DELETE ON TipoProducto
+FOR EACH ROW
+DECLARE
+  v_count NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO v_count FROM Productos WHERE id_tipo = :OLD.id_tipo;
+  IF v_count > 0 THEN
+    RAISE_APPLICATION_ERROR(-20005, 'No se puede eliminar un tipo de producto que está en uso.');
+  END IF;
+END;
+/
+
+-- =========================================
+-- 18. PROCEDIMIENTOS PARA OBTENER LOS DATOS
+-- =========================================
 CREATE OR REPLACE PROCEDURE ObtenerTodosLosBancos(
     p_cursor OUT SYS_REFCURSOR
-)AS
+) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT * FROM BANCOS;
+    SELECT * FROM Vista_Bancos;
 END ObtenerTodosLosBancos;
-
-CREATE OR REPLACE PROCEDURE ObtenerTodasLasCategorias (
+ 
+CREATE OR REPLACE PROCEDURE ObtenerTodasLasCategorias(
     p_resultado OUT SYS_REFCURSOR
 ) AS
 BEGIN
     OPEN p_resultado FOR
-        SELECT id_categoria, nombre
-        FROM categorias;
-END;
-
+    SELECT * FROM Vista_Categorias;
+END ObtenerTodasLasCategorias;
+ 
 CREATE OR REPLACE PROCEDURE ObtenerTodosLosClientes(
     p_cursor OUT SYS_REFCURSOR
 ) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT 
-        id_cliente, 
-        nombre, 
-        direccion, 
-        telefono, 
-        email
-    FROM Clientes;
-END;
-
+    SELECT * FROM Vista_Clientes;
+END ObtenerTodosLosClientes;
+ 
 CREATE OR REPLACE PROCEDURE ObtenerEstadosPedido(
     p_cursor OUT SYS_REFCURSOR
 ) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT id_estado, nombre
-    FROM ESTADOS_PEDIDO
-    ORDER BY id_estado;
+    SELECT * FROM Vista_EstadosPedido;
 END ObtenerEstadosPedido;
 
 CREATE OR REPLACE PROCEDURE ObtenerTodosProductos(
-p_cursor OUT SYS_REFCURSOR
-)AS
+    p_cursor OUT SYS_REFCURSOR
+) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT id_producto, id_tipo, id_proveedor, nombre, precio_kg, stock_kg
-    FROM productos;
+    SELECT * FROM Vista_Productos;
 END ObtenerTodosProductos;
 
 CREATE OR REPLACE PROCEDURE ObtenerTodosProveedores(
@@ -774,67 +1008,131 @@ CREATE OR REPLACE PROCEDURE ObtenerTodosProveedores(
 ) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT id_proveedor, nombre, telefono, email, direccion
-    FROM PROVEEDORES
-    ORDER BY id_proveedor;
-END ObtenerTodosProveedores;
+    SELECT * FROM Vista_Proveedores;
+END ObtenerTodosProveedores; 
 
 CREATE OR REPLACE PROCEDURE ObtenerTodosTiposProducto(
     p_cursor OUT SYS_REFCURSOR
 ) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT id_tipo, id_categoria, nombre
-    FROM TIPOPRODUCTO
-    ORDER BY id_tipo;
+    SELECT * FROM Vista_TiposProducto;
 END ObtenerTodosTiposProducto;
 
-CREATE OR REPLACE PROCEDURE ObtenerTodosDetallesPago(p_cursor OUT SYS_REFCURSOR)
-AS
+CREATE OR REPLACE PROCEDURE ObtenerTodosDetallesPago(
+    p_cursor OUT SYS_REFCURSOR
+) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT id_detalle_pago, id_pago, id_metodo_pago, id_banco, 
-           numero_tarjeta, nombre_titular, fecha_expiracion, numero_transferencia 
-    FROM Detalles_Pago;
+    SELECT * FROM Vista_DetallesPago;
 END ObtenerTodosDetallesPago;
-
-CREATE OR REPLACE PROCEDURE ObtenerTodosDetallesPedido(p_cursor OUT SYS_REFCURSOR)
-AS
+ 
+CREATE OR REPLACE PROCEDURE ObtenerTodosDetallesPedido(
+    p_cursor OUT SYS_REFCURSOR
+) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT id_detalle, id_pedido, id_producto, cantidad_kg, precio_unitario, subtotal 
-    FROM Detalle_Pedido;
+    SELECT * FROM Vista_DetallesPedido;
 END ObtenerTodosDetallesPedido;
-
-CREATE OR REPLACE PROCEDURE ObtenerTodosMovimientosInventario(p_cursor OUT SYS_REFCURSOR)
-AS
+ 
+CREATE OR REPLACE PROCEDURE ObtenerTodosMovimientosInventario(
+    p_cursor OUT SYS_REFCURSOR
+) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT id_movimiento, id_producto, tipo_movimiento, cantidad_kg, 
-           fecha_movimiento, id_detalle_pedido 
-    FROM Inventario;
+    SELECT * FROM Vista_MovimientosInventario;
 END ObtenerTodosMovimientosInventario;
-
-CREATE OR REPLACE PROCEDURE ObtenerTodosMetodosPago(p_cursor OUT SYS_REFCURSOR)
-AS
+ 
+CREATE OR REPLACE PROCEDURE ObtenerTodosMetodosPago(
+    p_cursor OUT SYS_REFCURSOR
+) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT id_metodo_pago, nombre 
-    FROM Metodos_Pago;
+    SELECT * FROM Vista_MetodosPago;
 END ObtenerTodosMetodosPago;
-
-CREATE OR REPLACE PROCEDURE ObtenerTodosPagos(p_cursor OUT SYS_REFCURSOR)
-AS
+ 
+CREATE OR REPLACE PROCEDURE ObtenerTodosPagos(
+    p_cursor OUT SYS_REFCURSOR
+) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT id_pago, id_pedido, monto, fecha_pago, estado_pago 
-    FROM Pagos;
+    SELECT * FROM Vista_Pagos;
 END ObtenerTodosPagos;
 
-CREATE OR REPLACE PROCEDURE ObtenerTodosPedidos(p_cursor OUT SYS_REFCURSOR)
-AS
+CREATE OR REPLACE PROCEDURE ObtenerTodosPedidos(
+    p_cursor OUT SYS_REFCURSOR
+) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT id_pedido, id_cliente, id_estado, fecha_pedido, monto_pagado 
-    FROM Pedidos;
+    SELECT * FROM Vista_Pedidos;
 END ObtenerTodosPedidos;
+
+-- =========================================
+-- 19. Paquetes
+-- =========================================
+
+-- ========================================
+-- PAQUETE CLIENTES
+-- ========================================
+
+CREATE OR REPLACE PACKAGE pkg_clientes AS
+  PROCEDURE crear_cliente(p_nombre IN VARCHAR2, p_direccion IN VARCHAR2, p_telefono IN VARCHAR2, p_email IN VARCHAR2);
+  PROCEDURE actualizar_cliente(p_id IN INT, p_nombre IN VARCHAR2, p_direccion IN VARCHAR2, p_telefono IN VARCHAR2, p_email IN VARCHAR2);
+  PROCEDURE eliminar_cliente(p_id IN INT);
+  FUNCTION obtener_clientes RETURN SYS_REFCURSOR;
+END pkg_clientes;
+/
+
+CREATE OR REPLACE PACKAGE BODY pkg_clientes AS
+
+  PROCEDURE crear_cliente(p_nombre IN VARCHAR2, p_direccion IN VARCHAR2, p_telefono IN VARCHAR2, p_email IN VARCHAR2) IS
+  BEGIN
+    INSERT INTO Clientes(nombre, direccion, telefono, email)
+    VALUES (p_nombre, p_direccion, p_telefono, p_email);
+  END;
+
+  PROCEDURE actualizar_cliente(p_id IN INT, p_nombre IN VARCHAR2, p_direccion IN VARCHAR2, p_telefono IN VARCHAR2, p_email IN VARCHAR2) IS
+  BEGIN
+    UPDATE Clientes
+    SET nombre = p_nombre, direccion = p_direccion, telefono = p_telefono, email = p_email
+    WHERE id_cliente = p_id;
+  END;
+
+  PROCEDURE eliminar_cliente(p_id IN INT) IS
+  BEGIN
+    DELETE FROM Clientes WHERE id_cliente = p_id;
+  END;
+
+  FUNCTION obtener_clientes RETURN SYS_REFCURSOR IS
+    c_clientes SYS_REFCURSOR;
+  BEGIN
+    OPEN c_clientes FOR SELECT * FROM Clientes;
+    RETURN c_clientes;
+  END;
+
+END pkg_clientes;
+/
+
+-- PAQUETES PERSONALIZADOS
+
+-- Paquete para productos
+CREATE OR REPLACE PACKAGE pkg_productos AS
+  PROCEDURE actualizar_precio(p_id_producto IN INT, p_nuevo_precio IN NUMBER);
+  FUNCTION obtener_stock(p_id_producto IN INT) RETURN NUMBER;
+END pkg_productos;
+/
+
+CREATE OR REPLACE PACKAGE BODY pkg_productos AS
+  PROCEDURE actualizar_precio(p_id_producto IN INT, p_nuevo_precio IN NUMBER) IS
+  BEGIN
+    UPDATE Productos SET precio_kg = p_nuevo_precio WHERE id_producto = p_id_producto;
+  END;
+
+  FUNCTION obtener_stock(p_id_producto IN INT) RETURN NUMBER IS
+    v_stock NUMBER;
+  BEGIN
+    SELECT stock_kg INTO v_stock FROM Productos WHERE id_producto = p_id_producto;
+    RETURN v_stock;
+  END;
+END pkg_productos;
+/

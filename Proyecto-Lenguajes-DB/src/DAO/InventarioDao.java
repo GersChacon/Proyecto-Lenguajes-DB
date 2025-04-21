@@ -15,7 +15,7 @@ public class InventarioDao {
 
     public void insertarMovimiento(int idProducto, String tipoMovimiento,
             double cantidadKg, Integer idDetallePedido) {
-        String sql = "{call InsertarMovimientoInventario(?, ?, ?, ?)}";
+        String sql = "{call InsertarInventario(?, ?, ?, ?)}";
 
         try (Connection conn = ConexionProyecto.obtenerConexion(); CallableStatement stmt = conn.prepareCall(sql)) {
 
@@ -37,7 +37,7 @@ public class InventarioDao {
 
     public void actualizarMovimiento(int idMovimiento, int idProducto, String tipoMovimiento,
             double cantidadKg, Integer idDetallePedido) {
-        String sql = "{call ActualizarMovimientoInventario(?, ?, ?, ?, ?)}";
+        String sql = "{call ActualizarInventario(?, ?, ?, ?, ?)}";
 
         try (Connection conn = ConexionProyecto.obtenerConexion(); CallableStatement stmt = conn.prepareCall(sql)) {
 
@@ -59,7 +59,7 @@ public class InventarioDao {
     }
 
     public void eliminarMovimiento(int idMovimiento) {
-        String sql = "{call EliminarMovimientoInventario(?)}";
+        String sql = "{call EliminarInventario(?)}";
 
         try (Connection conn = ConexionProyecto.obtenerConexion(); CallableStatement stmt = conn.prepareCall(sql)) {
 
